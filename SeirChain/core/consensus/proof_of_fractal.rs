@@ -60,7 +60,8 @@ impl ProofOfFractal {
     pub fn solve_puzzle(&self, data: &[u8]) -> bool {
         let mut rng = OsRng;
         let start_time = std::time::Instant::now();
-        let timeout = std::time::Duration::from_secs(60); // 1 minute timeout
+        let timeout_secs = (*self.difficulty.lock().unwrap() as u64).pow(2).max(30).min(300);
+        let timeout = std::time::Duration::from_secs(timeout_secs);
 
         loop {
             if start_time.elapsed() > timeout {
