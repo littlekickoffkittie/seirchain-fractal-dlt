@@ -7,8 +7,8 @@ mod tests {
         let mut rps = RedundantPathSecurity::new();
         let path_id = "path-1".to_string();
 
-        assert!(rps.add_path(path_id.clone()));
-        assert!(!rps.add_path(path_id.clone())); // Cannot add duplicate
+        assert!(rps.add_path(&path_id));
+        assert!(!rps.add_path(&path_id)); // Cannot add duplicate
 
         assert!(rps.remove_path(&path_id));
         assert!(!rps.remove_path(&path_id)); // Cannot remove non-existent
@@ -24,8 +24,8 @@ mod tests {
 
         assert!(rps.is_node_promoted(&node_id));
 
-        assert!(rps.remove_promoted_node(node_id.clone()));
-        assert!(!rps.remove_promoted_node(node_id)); // Cannot remove non-existent
+        assert!(rps.remove_promoted_node(&node_id));
+        assert!(!rps.remove_promoted_node(&node_id)); // Cannot remove non-existent
     }
 
     #[test]
@@ -34,7 +34,7 @@ mod tests {
         let path_id = "path-1".to_string();
         let node_id = "node-1".to_string();
 
-        rps.add_path(path_id.clone());
+        rps.add_path(&path_id);
         rps.promote_node(&node_id);
 
         let active_paths = rps.list_active_paths();

@@ -116,6 +116,7 @@ impl Wallet {
         let transactions = self.ledger.get_recent_transactions();
         transactions.into_iter()
             .filter(|tx| tx.from == address || tx.to == address)
+            .cloned()
             .collect()
     }
 }
@@ -131,7 +132,7 @@ mod tests {
     fn test_wallet_create_and_transfer() {
         let token = Arc::new(Mutex::new(WaclaniumToken::new(1000, 10000, 10)));
         let ledger = Arc::new(Ledger::new(100));
-        let explorer = Arc::new(TriadExplorer::new(100, 3));
+        let explorer = Arc::new(TriadExplorer::new(100));
         let wallet = Wallet::new(token.clone(), ledger.clone(), explorer.clone());
 
         let addr1 = wallet.create_address("user1".to_string());

@@ -1,8 +1,8 @@
 // CLI entry point to start mining using HierarchicalRecursiveConsensus with CLI arguments
 
 use clap::Parser;
-use seirchain::Core::Consensus::hierarchical_recursive::HierarchicalRecursiveConsensus;
-use seirchain::Interface::Economics::waclanium_token::WaclaniumToken;
+use seirchain::core::consensus::hierarchical_recursive::HierarchicalRecursiveConsensus;
+use seirchain::interface::economics::waclanium_token::WaclaniumToken;
 
 /// CLI arguments for miner
 #[derive(Parser, Debug)]

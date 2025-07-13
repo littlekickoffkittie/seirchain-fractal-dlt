@@ -92,15 +92,12 @@ impl WaclaniumToken {
     /// Returns an error if sender has insufficient balance.
     pub fn transfer(&mut self, from: &str, to: &str, amount: u64) -> Result<(), String> {
         let from_balance = self.balances.get(from).cloned().unwrap_or(0);
-        let fee = self.fee;
-        if from_balance < amount + fee {
+        if from_balance < amount {
             return Err("Insufficient balance".to_string());
         }
-        self.balances.insert(from.to_string(), from_balance - amount - fee);
+        self.balances.insert(from.to_string(), from_balance - amount);
         let to_balance = self.balances.get(to).cloned().unwrap_or(0);
         self.balances.insert(to.to_string(), to_balance + amount);
-        let genesis_balance = self.balances.get("genesis").cloned().unwrap_or(0);
-        self.balances.insert("genesis".to_string(), genesis_balance + fee);
         Ok(())
     }
 
@@ -199,9 +196,8 @@ mod tests {
         let mut token = WaclaniumToken::new(1000, 10000, 1);
         token.mint("user1", 100).unwrap();
         assert!(token.transfer("user1", "user2", 50).is_ok());
-        assert_eq!(token.get_balance("user1"), 49);
+        assert_eq!(token.get_balance("user1"), 50);
         assert_eq!(token.get_balance("user2"), 50);
-        assert_eq!(token.get_balance("genesis"), 1001);
     }
 
     #[test]

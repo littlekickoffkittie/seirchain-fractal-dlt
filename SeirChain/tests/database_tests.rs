@@ -18,20 +18,20 @@ fn test_database_put_get_delete() {
     let value = b"test_value";
 
     // Test put
-    let put_result = db.put(key, value);
+    let put_result = db.put("default", key, value);
     assert!(put_result.is_ok());
 
     // Test get
-    let get_result = db.get(key).unwrap();
+    let get_result = db.get("default", key).unwrap();
     assert!(get_result.is_some());
     assert_eq!(get_result.unwrap(), value);
 
     // Test delete
-    let delete_result = db.delete(key);
+    let delete_result = db.delete("default", key);
     assert!(delete_result.is_ok());
 
     // Test get after delete
-    let get_result_after_delete = db.get(key).unwrap();
+    let get_result_after_delete = db.get("default", key).unwrap();
     assert!(get_result_after_delete.is_none());
 
     let _ = rocksdb::DB::destroy(&Options::default(), path);

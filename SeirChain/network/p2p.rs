@@ -24,10 +24,9 @@ pub struct NodeStatus {
     pub total_difficulty: u64,
 }
 
-#[derive(Clone)]
 pub struct P2PNode {
     pub node_id: String,
-    pub listener: TcpListener,
+    pub listener: Arc<TcpListener>,
     pub peers: Arc<Mutex<HashMap<SocketAddr, mpsc::Sender<P2PMessage>>>>,
 }
 
@@ -36,7 +35,7 @@ impl P2PNode {
         let listener = TcpListener::bind(bind_address).await?;
         Ok(P2PNode {
             node_id,
-            listener,
+            listener: Arc::new(listener),
             peers: Arc::new(Mutex::new(HashMap::new())),
         })
     }
@@ -45,20 +44,21 @@ impl P2PNode {
         loop {
             let (socket, addr) = self.listener.accept().await.unwrap();
             let peers = self.peers.clone();
-            let (tx, mut rx) = mpsc::channel(100);
+            let (tx, _rx) = mpsc::channel(100);
 
             peers.lock().unwrap().insert(addr, tx);
 
-            let self_clone = self.clone();
+            let peers_clone = self.peers.clone();
             tokio::spawn(async move {
                 let framed = Framed::new(socket, LengthDelimitedCodec::new());
-                let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, _, _> = tokio_serde::SymmetricallyFramed::new(
+                let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, Json<P2PMessage, P2PMessage>> = tokio_serde::SymmetricallyFramed::new(
                     framed,
                     Json::default(),
                 );
 
                 while let Some(Ok(msg)) = transport.next().await {
-                    self_clone.handle_message(msg, addr).await;
+                    let peers_for_handler = peers_clone.clone();
+                    handle_message(msg, addr, peers_for_handler).await;
                 }
             });
         }
@@ -71,7 +71,7 @@ impl P2PNode {
 
         tokio::spawn(async move {
             let framed = Framed::new(stream, LengthDelimitedCodec::new());
-            let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, _, _> = tokio_serde::SymmetricallyFramed::new(
+            let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, Json<P2PMessage, P2PMessage>> = tokio_serde::SymmetricallyFramed::new(
                 framed,
                 Json::default(),
             );
@@ -92,33 +92,36 @@ impl P2PNode {
             });
         }
     }
+}
 
-    async fn handle_message(&self, msg: P2PMessage, from: SocketAddr) {
+async fn handle_message(msg: P2PMessage, from: SocketAddr, peers: Arc<Mutex<HashMap<SocketAddr, mpsc::Sender<P2PMessage>>>>) {
+    let action = {
+        let peers_lock = peers.lock().unwrap();
         match msg {
-            P2PMessage::Ping => {
-                println!("Received Ping from {}", from);
-                let peers = self.peers.lock().unwrap();
-                if let Some(peer) = peers.get(&from) {
-                    peer.send(P2PMessage::Pong).await.unwrap();
-                }
-            }
-            P2PMessage::Pong => {
-                println!("Received Pong from {}", from);
-            }
-            P2PMessage::Status(status) => {
-                println!("Received Status from {}: {:?}", from, status);
-            }
+            P2PMessage::Ping => Some(P2PAction::Send(P2PMessage::Pong)),
             P2PMessage::GetPeers => {
-                println!("Received GetPeers from {}", from);
-                let peers = self.peers.lock().unwrap();
-                let peer_list = peers.keys().cloned().collect();
-                if let Some(peer) = peers.get(&from) {
-                    peer.send(P2PMessage::Peers(peer_list)).await.unwrap();
-                }
+                let peer_list = peers_lock.keys().cloned().collect();
+                Some(P2PAction::Send(P2PMessage::Peers(peer_list)))
             }
-            P2PMessage::Peers(peers) => {
-                println!("Received Peers from {}: {:?}", from, peers);
+            _ => None,
+        }
+    };
+
+    if let Some(action) = action {
+        let peer_to_send = {
+            let peers_lock = peers.lock().unwrap();
+            peers_lock.get(&from).cloned()
+        };
+        if let Some(peer) = peer_to_send {
+            match action {
+                P2PAction::Send(msg) => {
+                    peer.send(msg).await.unwrap();
+                }
             }
         }
     }
+}
+
+enum P2PAction {
+    Send(P2PMessage),
 }

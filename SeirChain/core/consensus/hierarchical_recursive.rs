@@ -45,7 +45,7 @@ impl HierarchicalRecursiveConsensus {
             self.state.insert(node.clone(), vote.to_string());
             // Add active path for each node vote
             if vote == "vote" {
-                self.security.add_path(node.clone());
+                self.security.add_path(node);
             } else {
                 self.security.remove_path(node);
             }
