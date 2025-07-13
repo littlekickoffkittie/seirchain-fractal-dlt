@@ -36,8 +36,8 @@ impl RedundantPathSecurity {
 
     /// Adds a new active path by its ID.
     /// Returns true if the path was newly inserted.
-    pub fn add_path(&mut self, path_id: String) -> bool {
-        let hash = Self::hash_id(&path_id);
+    pub fn add_path(&mut self, path_id: &str) -> bool {
+        let hash = Self::hash_id(path_id);
         self.active_paths.insert(hash)
     }
 
@@ -57,8 +57,8 @@ impl RedundantPathSecurity {
 
     /// Removes a promoted node by its ID.
     /// Returns true if the node was present and removed.
-    pub fn remove_promoted_node(&mut self, node_id: String) -> bool {
-        let hash = Self::hash_id(&node_id);
+    pub fn remove_promoted_node(&mut self, node_id: &str) -> bool {
+        let hash = Self::hash_id(node_id);
         self.promoted_nodes.remove(&hash)
     }
 
