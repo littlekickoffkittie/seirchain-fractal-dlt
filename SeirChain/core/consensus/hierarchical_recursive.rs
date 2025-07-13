@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::core::consensus::proof_of_fractal::ProofOfFractal;
 use crate::core::security::redundant_paths::RedundantPathSecurity;
+use crate::core::triad_matrix::triad_structure::Triad;
 
 /// HierarchicalRecursiveConsensus implements recursive PBFT-like consensus for SeirChain.
 pub struct HierarchicalRecursiveConsensus {
@@ -10,6 +11,7 @@ pub struct HierarchicalRecursiveConsensus {
     pub proof: ProofOfFractal, // Proof-of-Fractal puzzle instance
     pub security: RedundantPathSecurity, // Security module instance
     pub children: Vec<HierarchicalRecursiveConsensus>, // Child sub-fractals
+    pub triad: Triad, // TRIAD matrix for routing
 }
 
 impl HierarchicalRecursiveConsensus {
@@ -26,6 +28,8 @@ impl HierarchicalRecursiveConsensus {
             Vec::new()
         };
 
+        let triad = Triad::new();
+
         HierarchicalRecursiveConsensus {
             nodes,
             state: HashMap::new(),
@@ -33,6 +37,7 @@ impl HierarchicalRecursiveConsensus {
             proof,
             security: RedundantPathSecurity::new(),
             children,
+            triad,
         }
     }
 
@@ -47,6 +52,7 @@ impl HierarchicalRecursiveConsensus {
             }
             // Aggregate results from children. For simplicity, we require all children to agree.
             if child_results.iter().all(|&r| r) {
+                // self.triad.update_from_children(&self.children.iter().map(|c| &c.triad).collect::<Vec<_>>());
                 return true;
             } else {
                 return false;
