@@ -1,0 +1,13 @@
+[package]
+name = "seirchain"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "seirchain"
+path = "lib.rs"
+
+[dependencies]
+rand = "0.8.5"
+sha2 = "0.10.2"
+hex = "0.4.3"

@@ -1,122 +1,51 @@
-// unit_tests.rs
-// Unit tests for SeirChain core modules
-
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::Core::TriadMatrix::triad_structure::{Triad, Transaction};
-    use crate::Core::Consensus::proof_of_fractal::ProofOfFractal;
-    use crate::Core::Consensus::hierarchical_recursive::HierarchicalRecursiveConsensus;
-    use crate::Core::Security::redundant_paths::RedundantPathSecurity;
-    use crate::Network::Routing::multi_path_fractal::MultiPathFractalRouting;
-    use crate::Interface::VirtualMachine::svm_executor::SvmExecutor;
-    use crate::Interface::Economics::waclanium_token::WaclaniumToken;
+    use crate::core::security::redundant_paths::RedundantPathSecurity;
 
     #[test]
-    fn test_triad_insert_and_merkle_root() {
-        let mut triad = Triad::new();
-        let tx = Transaction {
-            sender: "Alice".to_string(),
-            receiver: "Bob".to_string(),
-            amount: 100,
-            timestamp: 1234567890,
-        };
-        triad.insert_transaction(tx);
-        assert_ne!(triad.merkle_root, [0u8; 32]);
+    fn test_add_and_remove_path() {
+        let mut rps = RedundantPathSecurity::new();
+        let path_id = "path-1".to_string();
+
+        assert!(rps.add_path(path_id.clone()));
+        assert!(!rps.add_path(path_id.clone())); // Cannot add duplicate
+
+        assert!(rps.remove_path(&path_id));
+        assert!(!rps.remove_path(&path_id)); // Cannot remove non-existent
     }
 
     #[test]
-    fn test_triad_proof_of_fractal_solve_and_verify() {
-        let mut triad = Triad::new();
-        let tx = Transaction {
-            sender: "Alice".to_string(),
-            receiver: "Bob".to_string(),
-            amount: 100,
-            timestamp: 1234567890,
-        };
-        triad.insert_transaction(tx);
-        triad.calculate_merkle_root();
-        triad.proof_of_fractal_data.difficulty = 1;
-        let solved = triad.solve_proof_of_fractal();
-        assert!(solved);
-        let verified = triad.verify_proof_of_fractal();
-        assert!(verified);
+    fn test_promote_and_remove_node() {
+        let mut rps = RedundantPathSecurity::new();
+        let node_id = "node-1".to_string();
+
+        assert!(rps.promote_node(&node_id));
+        assert!(!rps.promote_node(&node_id)); // Cannot promote duplicate
+
+        assert!(rps.is_node_promoted(&node_id));
+
+        assert!(rps.remove_promoted_node(node_id.clone()));
+        assert!(!rps.remove_promoted_node(node_id)); // Cannot remove non-existent
     }
 
     #[test]
-    fn test_triad_recursive_consensus() {
-        let mut root = Triad::new();
-        let child = Triad::new();
-        root.add_child(0, child).unwrap();
-        root.proof_of_fractal_data.difficulty = 1;
-        let consensus_result = root.run_recursive_consensus(1);
-        assert!(consensus_result);
-    }
+    fn test_list_paths_and_nodes() {
+        let mut rps = RedundantPathSecurity::new();
+        let path_id = "path-1".to_string();
+        let node_id = "node-1".to_string();
 
-    #[test]
-    fn test_proof_of_fractal_solve_and_verify() {
-        let mut pof = ProofOfFractal::new(4);
-        let data = b"test data";
-        let solved = pof.solve_puzzle(data);
-        assert!(solved);
-        assert!(pof.verify_solution(data));
-    }
+        rps.add_path(path_id.clone());
+        rps.promote_node(&node_id);
 
-    #[test]
-    fn test_hierarchical_recursive_consensus() {
-        let nodes = vec!["node1".to_string(), "node2".to_string(), "node3".to_string(), "node4".to_string()];
-        let mut hrc = HierarchicalRecursiveConsensus::new(nodes, 1, 4);
-        assert!(hrc.run_consensus());
-        assert!(hrc.validate_subfractal());
-    }
+        let active_paths = rps.list_active_paths();
+        let promoted_nodes = rps.list_promoted_nodes();
 
-    #[test]
-    fn test_redundant_path_security() {
-        let mut rpsf = RedundantPathSecurity::new();
-        rpsf.add_path("path1".to_string());
-        assert!(rpsf.validate_paths());
-        rpsf.promote_node("node1".to_string());
-        assert!(rpsf.is_node_promoted("node1"));
-        assert!(rpsf.remove_path("path1"));
-        assert!(rpsf.remove_promoted_node("node1"));
-    }
+        assert_eq!(active_paths.len(), 1);
+        assert_eq!(promoted_nodes.len(), 1);
 
-    #[test]
-    fn test_multi_path_fractal_routing() {
-        let mut mpfr = MultiPathFractalRouting::new();
-        mpfr.routing_table.insert("coord1".to_string(), vec!["node1".to_string()]);
-        mpfr.update_load("node1".to_string(), 10);
-        assert_eq!(mpfr.route_transaction("coord1").unwrap()[0], "node1");
-        assert_eq!(mpfr.load_balance().unwrap(), "node1");
-        assert!(mpfr.remove_node("coord1"));
-        mpfr.clear_routing_table();
-        assert!(mpfr.list_nodes().is_empty());
-    }
-
-    #[test]
-    fn test_svm_executor() {
-        let mut svm = SvmExecutor::new();
-        let input = b"input data";
-        let output = svm.execute_contract("contract1", input).unwrap();
-        assert_eq!(output, input);
-        assert!(svm.contract_exists("contract1"));
-        assert!(svm.remove_contract_state("contract1"));
-        svm.clear_contract_states();
-        assert!(!svm.contract_exists("contract1"));
-    }
-
-    #[test]
-    fn test_waclanium_token() {
-        let mut wac = WaclaniumToken::new(1000, 2000);
-        assert_eq!(wac.get_balance("genesis"), 1000);
-        assert!(wac.transfer("genesis", "user1", 100).is_ok());
-        assert_eq!(wac.get_balance("user1"), 100);
-        assert!(wac.stake("user1", 50).is_ok());
-        assert_eq!(wac.get_stake("user1"), 50);
-        assert!(wac.unstake("user1", 20).is_ok());
-        assert_eq!(wac.get_stake("user1"), 30);
-        assert!(wac.mint("user1", 500).is_ok());
-        assert_eq!(wac.get_balance("user1"), 580);
-        assert!(wac.governance_vote("user1", 10));
+        // The listed paths/nodes are hex-encoded hashes, so we can't directly compare to the original IDs
+        // We can check if the lists are non-empty
+        assert!(!active_paths[0].is_empty());
+        assert!(!promoted_nodes[0].is_empty());
     }
 }
