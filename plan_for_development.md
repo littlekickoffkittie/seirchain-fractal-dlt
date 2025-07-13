@@ -9,7 +9,7 @@ _SeirChain is a distributed ledger technology (DLT) project focusing on robust, 
 **Goal:** Seamlessly connect the Wallet with TriadExplorer for transparent wallet operations and user activity tracking.
 
 ### Tasks
-- [ ] Integrate Wallet with TriadExplorer to log wallet creation and transaction activities
+- [x] Integrate Wallet with TriadExplorer to log wallet creation and transaction activities
     - Add event logging for wallet operations (e.g., creation, transfer, error)
     - Implement error handling and recovery for Explorer updates
     - Ensure synchronization between wallet state and explorer activities
@@ -28,7 +28,7 @@ _SeirChain is a distributed ledger technology (DLT) project focusing on robust, 
 **Goal:** Establish a resilient networking layer for node communication and real-time status updates.
 
 ### Tasks
-- [ ] Design and implement node networking module
+- [x] Design and implement node networking module
     - Implement peer-to-peer status tracking and communication
     - Decide whether to extend `Network/Routing/multi_path_fractal.rs` or create new modules ([link](./Network/Routing/multi_path_fractal.rs))
     - Define protocols for node discovery, status updates, and message passing (include sequence diagrams if possible)
@@ -48,10 +48,10 @@ _SeirChain is a distributed ledger technology (DLT) project focusing on robust, 
 **Goal:** Provide persistent, fault-tolerant storage for ledger, wallet, and network state.
 
 ### Tasks
-- [ ] Select appropriate database technology (e.g., PostgreSQL, RocksDB)
-- [ ] Design schema to support fractal ledger structure and wallet data (attach ER diagram)
-- [ ] Implement database put/get operations
-- [ ] Integrate database with core modules
+- [x] Select appropriate database technology (e.g., PostgreSQL, RocksDB)
+- [x] Design schema to support fractal ledger structure and wallet data (attach ER diagram)
+- [x] Implement database put/get operations
+- [x] Integrate database with core modules
 - [ ] Ensure data consistency and fault tolerance
 
 **Success Metrics:**
@@ -64,9 +64,9 @@ _SeirChain is a distributed ledger technology (DLT) project focusing on robust, 
 
 | Task                                   | Priority | Owner         | Due Date   | Status     |
 |-----------------------------------------|----------|---------------|------------|------------|
-| Wallet-Explorer integration             | High     | @username     | YYYY-MM-DD | [ ]        |
-| Node networking design                  | High     | @username     | YYYY-MM-DD | [ ]        |
-| Database selection & schema             | Medium   | @username     | YYYY-MM-DD | [ ]        |
+| Wallet-Explorer integration             | High     | @Jules        | 2024-07-14 | [x]        |
+| Node networking design                  | High     | @Jules        | 2024-07-14 | [x]        |
+| Database selection & schema             | Medium   | @Jules        | 2024-07-14 | [x]        |
 
 - [ ] Prioritize tasks based on project roadmap
 - [ ] Assign development tasks to team members
@@ -81,3 +81,4 @@ _Contributors: Please suggest improvements via PRs or GitHub Issues._
 
 **Changelog:**  
 - 2025-07-13: Major restructuring for clarity, priorities, and assignment tracking
+- 2024-07-14: @Jules completed wallet-explorer integration, node networking design, and database schema.

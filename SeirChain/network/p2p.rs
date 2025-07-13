@@ -24,6 +24,7 @@ pub struct NodeStatus {
     pub total_difficulty: u64,
 }
 
+#[derive(Clone)]
 pub struct P2PNode {
     pub node_id: String,
     pub listener: TcpListener,
@@ -48,6 +49,7 @@ impl P2PNode {
 
             peers.lock().unwrap().insert(addr, tx);
 
+            let self_clone = self.clone();
             tokio::spawn(async move {
                 let framed = Framed::new(socket, LengthDelimitedCodec::new());
                 let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, _, _> = tokio_serde::SymmetricallyFramed::new(
@@ -55,8 +57,8 @@ impl P2PNode {
                     Json::default(),
                 );
 
-                while let Some(msg) = rx.recv().await {
-                    transport.send(msg).await.unwrap();
+                while let Some(Ok(msg)) = transport.next().await {
+                    self_clone.handle_message(msg, addr).await;
                 }
             });
         }
@@ -88,6 +90,35 @@ impl P2PNode {
             tokio::spawn(async move {
                 peer.send(msg).await.unwrap();
             });
+        }
+    }
+
+    async fn handle_message(&self, msg: P2PMessage, from: SocketAddr) {
+        match msg {
+            P2PMessage::Ping => {
+                println!("Received Ping from {}", from);
+                let peers = self.peers.lock().unwrap();
+                if let Some(peer) = peers.get(&from) {
+                    peer.send(P2PMessage::Pong).await.unwrap();
+                }
+            }
+            P2PMessage::Pong => {
+                println!("Received Pong from {}", from);
+            }
+            P2PMessage::Status(status) => {
+                println!("Received Status from {}: {:?}", from, status);
+            }
+            P2PMessage::GetPeers => {
+                println!("Received GetPeers from {}", from);
+                let peers = self.peers.lock().unwrap();
+                let peer_list = peers.keys().cloned().collect();
+                if let Some(peer) = peers.get(&from) {
+                    peer.send(P2PMessage::Peers(peer_list)).await.unwrap();
+                }
+            }
+            P2PMessage::Peers(peers) => {
+                println!("Received Peers from {}: {:?}", from, peers);
+            }
         }
     }
 }
