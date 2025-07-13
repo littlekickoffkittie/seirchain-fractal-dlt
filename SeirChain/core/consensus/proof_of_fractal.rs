@@ -132,3 +132,41 @@ impl fmt::Display for ProofOfFractal {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_proof_of_fractal() {
+        let pof = ProofOfFractal::new(4);
+        assert_eq!(*pof.difficulty.lock().unwrap(), 4);
+        let target = ProofOfFractal::calculate_target(4);
+        assert_eq!(*pof.target.lock().unwrap(), target);
+    }
+
+    #[test]
+    fn test_adjust_difficulty() {
+        let pof = ProofOfFractal::new(4);
+        pof.adjust_difficulty(1000);
+        let difficulty = *pof.difficulty.lock().unwrap();
+        assert!(difficulty > 4);
+    }
+
+    #[test]
+    fn test_solve_and_verify() {
+        let pof = ProofOfFractal::new(8); // Use a low difficulty for testing
+        let data = b"test data";
+        assert!(pof.solve_puzzle(data));
+        assert!(pof.verify_solution(data));
+    }
+
+    #[test]
+    fn test_reset() {
+        let pof = ProofOfFractal::new(4);
+        pof.solve_puzzle(b"test");
+        pof.reset();
+        assert_eq!(pof.nonce.load(Ordering::SeqCst), 0);
+        assert_eq!(*pof.hash.lock().unwrap(), [0u8; 32]);
+    }
+}

@@ -81,3 +81,82 @@ impl MultiPathFractalRouting {
         self.routing_table.keys().collect()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_multi_path_fractal_routing() {
+        let mpfr = MultiPathFractalRouting::new();
+        assert!(mpfr.routing_table.is_empty());
+        assert!(mpfr.load_metrics.is_empty());
+    }
+
+    #[test]
+    fn test_route_transaction() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let coordinate = "0.1.2";
+        let nodes = vec!["node1".to_string(), "node2".to_string()];
+        mpfr.routing_table.insert(coordinate.to_string(), nodes.clone());
+        let routed_nodes = mpfr.route_transaction(coordinate).unwrap();
+        assert_eq!(routed_nodes, nodes);
+    }
+
+    #[test]
+    fn test_update_load() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let node_id = "node1".to_string();
+        mpfr.update_load(node_id.clone(), 10);
+        assert_eq!(mpfr.get_load(&node_id), Some(&10));
+        mpfr.update_load(node_id.clone(), -5);
+        assert_eq!(mpfr.get_load(&node_id), Some(&5));
+    }
+
+    #[test]
+    fn test_load_balance() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        mpfr.update_load("node1".to_string(), 10);
+        mpfr.update_load("node2".to_string(), 5);
+        assert_eq!(mpfr.load_balance(), Some("node2".to_string()));
+    }
+
+    #[test]
+    fn test_remove_node() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let coordinate = "0.1.2";
+        let nodes = vec!["node1".to_string(), "node2".to_string()];
+        mpfr.routing_table.insert(coordinate.to_string(), nodes);
+        assert!(mpfr.remove_node(coordinate));
+        assert!(!mpfr.remove_node(coordinate));
+    }
+
+    #[test]
+    fn test_clear_routing_table() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let coordinate = "0.1.2";
+        let nodes = vec!["node1".to_string(), "node2".to_string()];
+        mpfr.routing_table.insert(coordinate.to_string(), nodes);
+        mpfr.clear_routing_table();
+        assert!(mpfr.routing_table.is_empty());
+    }
+
+    #[test]
+    fn test_get_load() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let node_id = "node1".to_string();
+        mpfr.update_load(node_id.clone(), 10);
+        assert_eq!(mpfr.get_load(&node_id), Some(&10));
+    }
+
+    #[test]
+    fn test_list_nodes() {
+        let mut mpfr = MultiPathFractalRouting::new();
+        let coordinate = "0.1.2";
+        let nodes = vec!["node1".to_string(), "node2".to_string()];
+        mpfr.routing_table.insert(coordinate.to_string(), nodes);
+        let listed_nodes = mpfr.list_nodes();
+        assert_eq!(listed_nodes.len(), 1);
+        assert_eq!(listed_nodes[0], &coordinate);
+    }
+}
