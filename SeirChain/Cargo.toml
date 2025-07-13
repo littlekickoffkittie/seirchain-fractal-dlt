@@ -26,11 +26,3 @@ path = "tests/security_tests.rs"
 [[bin]]
 name = "bencher"
 path = "src/bin/bencher.rs"
-
-[[bin]]
-name = "bencher"
-path = "src/bin/bencher.rs"
-
-[[bin]]
-name = "bencher"
-path = "src/bin/bencher.rs"

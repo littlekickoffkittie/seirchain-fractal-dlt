@@ -20,6 +20,10 @@ struct Args {
     #[arg(short, long, default_value_t = 4)]
     difficulty: u32,
 
+    /// Depth of the fractal hierarchy
+    #[arg(long, default_value_t = 1)]
+    depth: u32,
+
     /// Miner user ID to receive minted tokens
     #[arg(short = 'i', long, default_value = "miner1")]
     miner_id: String,
@@ -36,14 +40,15 @@ fn main() {
     println!("Nodes: {:?}", args.nodes);
     println!("Fault tolerance: {}", args.fault_tolerance);
     println!("Difficulty: {}", args.difficulty);
+    println!("Depth: {}", args.depth);
     println!("Miner ID: {}", args.miner_id);
     println!("Mint amount: {}", args.mint_amount);
 
     // Create the consensus instance
-    let mut consensus = HierarchicalRecursiveConsensus::new(args.nodes, args.fault_tolerance, args.difficulty);
+    let mut consensus = HierarchicalRecursiveConsensus::new(args.nodes, args.fault_tolerance, args.difficulty, args.depth);
 
     // Run the consensus (mining) process
-    let result = consensus.run_consensus();
+    let result = consensus.run_consensus(&mut rand::thread_rng());
 
     if result {
         println!("Mining succeeded and consensus reached.");

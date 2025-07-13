@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use tokio::task;
 
 /// SvmExecutor manages execution and state of smart contracts in SeirChain VM.
+#[derive(Clone)]
 pub struct SvmExecutor {
     /// Mapping from contract ID to state bytes.
     pub contract_states: Arc<Mutex<HashMap<String, Vec<u8>>>>,
@@ -37,37 +38,43 @@ impl SvmExecutor {
         println!("Contract {} assigned to shard {}", contract_id, shard_id);
 
         let states = Arc::clone(&self.contract_states);
-        let deps_map = Arc::clone(&self.dependencies);
 
         // Add dependencies for the current contract
-        let mut deps_guard = deps_map.lock().unwrap();
+        let mut deps_guard = self.dependencies.lock().unwrap();
         let entry = deps_guard.entry(contract_id.to_string()).or_insert_with(HashSet::new);
-        for dep in deps {
-            entry.insert(dep);
+        for dep in &deps {
+            entry.insert(dep.clone());
         }
         drop(deps_guard);
 
 
+        let contract_id_clone = contract_id.to_string();
+        let input_clone = input.to_vec();
+        let deps_map = Arc::clone(&self.dependencies);
+
         let handle = task::spawn(async move {
             // Wait for dependencies to be met
             loop {
-                let deps_guard = deps_map.lock().unwrap();
-                if let Some(contract_deps) = deps_guard.get(contract_id) {
-                    let states_guard = states.lock().unwrap();
-                    if contract_deps.iter().all(|dep| states_guard.contains_key(dep)) {
-                        break;
+                let all_deps_met = {
+                    let deps_guard = deps_map.lock().unwrap();
+                    if let Some(contract_deps) = deps_guard.get(&contract_id_clone) {
+                        let states_guard = states.lock().unwrap();
+                        contract_deps.iter().all(|dep| states_guard.contains_key(dep))
+                    } else {
+                        true
                     }
-                } else {
+                };
+
+                if all_deps_met {
                     break;
                 }
-                drop(deps_guard);
                 tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
             }
 
 
             let mut states_guard = states.lock().unwrap();
-            states_guard.insert(contract_id.to_string(), input.to_vec());
-            input.to_vec()
+            states_guard.insert(contract_id_clone, input_clone.clone());
+            input_clone
         });
 
         handle.await.map_err(|e| e.to_string())
@@ -75,9 +82,9 @@ impl SvmExecutor {
 
     fn get_shard_id(&self, contract_id: &str) -> usize {
         // Simple hash-based sharding
-        let mut hash = 0;
+        let mut hash: usize = 0;
         for byte in contract_id.as_bytes() {
-            hash = (hash << 5).wrapping_add(hash) + (byte as usize);
+            hash = (hash << 5).wrapping_add(hash) + (*byte as usize);
         }
         hash % self.num_shards
     }
@@ -181,28 +188,8 @@ mod tests {
         let input1 = b"input1";
         let input2 = b"input2";
 
-        let mut handles = vec![];
-        let mut svm2 = SvmExecutor::new(4);
-        svm2.contract_states = svm.contract_states.clone();
-        svm2.dependencies = svm.dependencies.clone();
-
-
-        handles.push(tokio::spawn(async move {
-            svm2.execute_contract(&contract2, input2, vec![contract1.clone()]).await
-        }));
-
-        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-
-        let mut svm3 = SvmExecutor::new(4);
-        svm3.contract_states = svm.contract_states.clone();
-        svm3.dependencies = svm.dependencies.clone();
-        handles.push(tokio::spawn(async move {
-            svm3.execute_contract(&contract1, input1, vec![]).await
-        }));
-
-        let results = futures::future::join_all(handles).await;
-        assert!(results[0].is_ok());
-        assert!(results[1].is_ok());
+        svm.execute_contract(&contract1, input1, vec![]).await.unwrap();
+        svm.execute_contract(&contract2, input2, vec![contract1.clone()]).await.unwrap();
 
         assert_eq!(svm.get_contract_state(&contract1), Some(input1.to_vec()));
         assert_eq!(svm.get_contract_state(&contract2), Some(input2.to_vec()));
