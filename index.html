@@ -1,0 +1,662 @@
+<html class="dark" lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   SeirChain Blockchain Dashboard
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js">
+  </script>
+  <style>
+   body {
+            font-family: 'Roboto', sans-serif;
+        }
+        .dark .bg-gray-900 {
+            background-color: #000000;
+        }
+        .dark .bg-gray-800 {
+            background-color: #111111;
+        }
+        .dark .border-gray-700 {
+            border-color: #333333;
+        }
+        .dark .text-gray-200 {
+            color: #e5e7eb;
+        }
+        .dark .text-gray-400 {
+            color: #9ca3af;
+        }
+        .high-contrast-text {
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        #triad-canvas {
+            width: 100%;
+            height: 400px;
+            display: block;
+            border-radius: 0.5rem;
+            cursor: grab;
+            background-color: #000000;
+        }
+        .animate-pulse-fast {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            50% {
+                opacity: 0.5;
+            }
+        }
+  </style>
+ </head>
+ <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
+  <div class="flex h-screen">
+   <!-- Sidebar -->
+   <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <div class="p-6 text-center border-b border-gray-200 dark:border-gray-700">
+     <h1 class="text-2xl font-bold high-contrast-text">
+      SEIRCHAIN
+     </h1>
+     <p class="text-xs text-gray-500 dark:text-gray-400">
+      Fractal Ledger Dashboard
+     </p>
+    </div>
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+     <a class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md" href="#staking">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+       <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3 .895 3 2-1.343 2-3 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+      </svg>
+      Staking
+     </a>
+     <a class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" href="#pof">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+       <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+      </svg>
+      PoF Mining
+     </a>
+     <a class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" href="#explorer">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+       <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+       <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+      </svg>
+      Explorer
+     </a>
+     <a class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" href="#network">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+       <path d="M8 9l4-4 4 4m0 6l-4 4-4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+      </svg>
+      Network
+     </a>
+     <a class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md" href="#developer">
+      <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+       <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+       </path>
+      </svg>
+      Developer
+     </a>
+    </nav>
+    <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+     <div class="flex items-center justify-between">
+      <span class="text-sm">
+       Dark Mode
+      </span>
+      <button aria-label="Toggle dark mode" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-gray-300 dark:bg-gray-600" id="darkModeToggle">
+       <span class="sr-only">
+        Enable dark mode
+       </span>
+       <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1 dark:translate-x-6">
+       </span>
+      </button>
+     </div>
+    </div>
+   </aside>
+   <!-- Main Content -->
+   <main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+    <header class="flex justify-between items-center mb-8">
+     <h2 class="text-3xl font-bold high-contrast-text">
+      Dashboard
+     </h2>
+     <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4">
+       <button class="bg-black dark:bg-white text-white dark:text-black font-semibold py-2 px-4 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition" id="createWalletBtn" type="button">
+        Create Wallet
+       </button>
+       <button class="bg-gray-200 dark:bg-gray-700 text-black dark:text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition" id="signInWalletBtn" type="button">
+        Sign In with Wallet
+       </button>
+      </div>
+     </div>
+    </header>
+    <!-- Staking Portfolio Overview -->
+    <section class="mb-10" id="staking">
+     <h3 class="text-xl font-semibold mb-4 high-contrast-text">
+      Staking Portfolio
+     </h3>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+       <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+        Total Staked
+       </h4>
+       <p class="text-3xl font-bold high-contrast-text mt-2">
+        -- WAC
+       </p>
+       <p class="text-sm text-gray-400 mt-1 italic">
+        Not initialized
+       </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+       <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+        Rewards Earned
+       </h4>
+       <p class="text-3xl font-bold high-contrast-text mt-2">
+        -- WAC
+       </p>
+       <p class="text-sm text-gray-400 mt-1 italic">
+        Not initialized
+       </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+       <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+        Active Stakes
+       </h4>
+       <p class="text-3xl font-bold high-contrast-text mt-2">
+        --
+       </p>
+       <p class="text-sm text-gray-400 mt-1 italic">
+        Not initialized
+       </p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col justify-center">
+       <button class="w-full bg-black dark:bg-white text-white dark:text-black font-semibold py-2 px-4 rounded-md cursor-not-allowed opacity-50" disabled="" type="button">
+        Manage Stakes
+       </button>
+       <button class="w-full mt-2 text-sm text-gray-400 cursor-not-allowed italic" disabled="" type="button">
+        Rebalance
+       </button>
+      </div>
+     </div>
+     <div class="mt-6 bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+      <h4 class="text-lg font-semibold mb-4 high-contrast-text">
+       Staking Growth
+      </h4>
+      <div class="chart-container flex items-center justify-center h-64 text-gray-400 italic">
+       Data not available
+      </div>
+     </div>
+    </section>
+    <!-- PoF Performance Dashboard -->
+    <section class="mb-10" id="pof">
+     <h3 class="text-xl font-semibold mb-4 high-contrast-text">
+      Proof-of-Fractal (PoF) Performance
+     </h3>
+     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-1 space-y-6">
+       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+         <h4 class="text-lg font-semibold high-contrast-text">
+          PoF Mining Status
+         </h4>
+         <span class="text-sm font-medium text-gray-400 flex items-center italic">
+          <span class="w-2 h-2 bg-gray-400 rounded-full mr-2">
+          </span>
+          Not Active
+         </span>
+        </div>
+        <div class="mt-4 flex space-x-2">
+         <button class="w-full bg-gray-400 text-gray-700 font-semibold py-2 px-4 rounded-md cursor-not-allowed opacity-50" disabled="" type="button">
+          Stop
+         </button>
+         <button class="w-full bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400 font-semibold py-2 px-4 rounded-md cursor-not-allowed opacity-50" disabled="" type="button">
+          Settings
+         </button>
+        </div>
+       </div>
+       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+         Puzzle Rate
+        </h4>
+        <p class="text-3xl font-bold high-contrast-text mt-2">
+         -- Sol/s
+        </p>
+       </div>
+       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+         Validated / Invalid Triads
+        </h4>
+        <p class="text-3xl font-bold high-contrast-text mt-2">
+         <span class="text-gray-400">
+          --
+         </span>
+         /
+         <span class="text-gray-400">
+          --
+         </span>
+        </p>
+       </div>
+      </div>
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center h-64 text-gray-400 italic">
+       Data not available
+      </div>
+     </div>
+    </section>
+    <!-- Triad Matrix Explorer -->
+    <section class="mb-10" id="explorer">
+     <h3 class="text-xl font-semibold mb-4 high-contrast-text">
+      Triad Matrix Explorer
+     </h3>
+     <div class="bg-black p-4 rounded-lg border border-gray-700 flex flex-col">
+      <canvas aria-label="3D interactive visualization of Genesis Triad fractal breaking down into smaller fractal triangles representing mining operations" id="triad-canvas" role="img" tabindex="0">
+      </canvas>
+      <div class="flex justify-between items-center mt-4 text-white p-2">
+       <div>
+        <p class="text-sm">
+         Triad Depth:
+         <span class="font-mono" id="triadDepthDisplay">
+          0
+         </span>
+        </p>
+        <p class="text-sm">
+         Total Transactions:
+         <span class="font-mono" id="totalTransactionsDisplay">
+          0
+         </span>
+        </p>
+       </div>
+       <div class="flex space-x-2">
+        <button aria-label="Increase triad depth" class="bg-gray-800 p-2 rounded-md hover:bg-gray-700" id="increaseDepthBtn" type="button" title="Increase Triad Depth">
+         <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 20 20">
+          <path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" fill-rule="evenodd">
+          </path>
+         </svg>
+        </button>
+        <button aria-label="Decrease triad depth" class="bg-gray-800 p-2 rounded-md hover:bg-gray-700" id="decreaseDepthBtn" type="button" title="Decrease Triad Depth">
+         <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 20 20">
+          <path clip-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" fill-rule="evenodd">
+          </path>
+         </svg>
+        </button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <!-- Network and Developer Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+     <!-- Network and Consensus Monitoring -->
+     <section id="network">
+      <h3 class="text-xl font-semibold mb-4 high-contrast-text">
+       Network &amp; Consensus
+      </h3>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4">
+       <div class="flex justify-between items-center">
+        <span class="font-medium">
+         Network Health
+        </span>
+        <span class="text-gray-400 font-semibold italic">
+         --
+        </span>
+       </div>
+       <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div class="bg-gray-400 h-2.5 rounded-full" style="width: 0%">
+        </div>
+       </div>
+       <div class="flex justify-between items-center">
+        <span class="font-medium">
+         Node Sync
+        </span>
+        <span class="text-gray-400 font-semibold italic">
+         --
+        </span>
+       </div>
+       <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div class="bg-gray-400 h-2.5 rounded-full" style="width: 0%">
+        </div>
+       </div>
+       <div class="flex justify-between items-center">
+        <span class="font-medium">
+         Consensus
+        </span>
+        <span class="text-gray-400 italic">
+         --
+        </span>
+       </div>
+       <div class="text-sm text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4 italic">
+        <p>
+         Last Consensus Event: --
+        </p>
+        <p>
+         Peers Connected: --
+        </p>
+       </div>
+      </div>
+     </section>
+     <!-- Developer and API Access -->
+     <section id="developer">
+      <h3 class="text-xl font-semibold mb-4 high-contrast-text">
+       Developer &amp; API
+      </h3>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4">
+       <div class="flex justify-between items-center">
+        <span class="font-medium">
+         SVM Status
+        </span>
+        <span class="text-gray-400 font-semibold italic">
+         --
+        </span>
+       </div>
+       <div class="flex justify-between items-center">
+        <span class="font-medium">
+         API Gateway
+        </span>
+        <span class="text-gray-400 font-semibold italic">
+         --
+        </span>
+       </div>
+       <div class="border-t border-gray-200 dark:border-gray-700 pt-4 flex space-x-2">
+        <button class="w-full bg-gray-400 text-gray-700 font-semibold py-2 px-4 rounded-md cursor-not-allowed opacity-50" disabled="" type="button">
+         SDKs
+        </button>
+        <button class="w-full bg-gray-400 text-gray-700 font-semibold py-2 px-4 rounded-md cursor-not-allowed opacity-50" disabled="" type="button">
+         Docs
+        </button>
+       </div>
+      </div>
+     </section>
+    </div>
+   </main>
+  </div>
+  <script>
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const html = document.documentElement;
+
+    darkModeToggle.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      // Re-render charts for dark mode
+      if (stakingChart) stakingChart.destroy();
+      if (pofChart) pofChart.destroy();
+      renderCharts();
+    });
+
+    let stakingChart, pofChart;
+
+    function renderCharts() {
+      const isDarkMode = html.classList.contains('dark');
+      const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+      const textColor = isDarkMode ? '#e5e7eb' : '#111827';
+      const barColor = isDarkMode ? '#FFFFFF' : '#111827';
+      const lineColor = isDarkMode ? '#FFFFFF' : '#111827';
+
+      // Clear charts if any
+      if (stakingChart) {
+        stakingChart.destroy();
+        stakingChart = null;
+      }
+      if (pofChart) {
+        pofChart.destroy();
+        pofChart = null;
+      }
+
+      // No data to render yet, so skip chart creation
+    }
+
+    renderCharts();
+
+    // Triad Matrix Explorer Visualization
+
+    const canvas = document.getElementById('triad-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas to match container size
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      drawTriad(currentDepth);
+    });
+
+    // Triad parameters
+    let currentDepth = 0;
+    const maxDepth = 6; // Limit depth for performance
+    const minDepth = 0;
+
+    // Mining operations simulation: color intensity based on "mining activity"
+    // We'll simulate mining activity as random values per triangle at each depth
+
+    // Store mining activity data per depth and triangle index
+    let miningData = {};
+
+    // Generate mining data for a given depth
+    function generateMiningData(depth) {
+      const count = Math.pow(3, depth);
+      miningData[depth] = [];
+      for (let i = 0; i < count; i++) {
+        // Random mining activity between 0 and 1
+        miningData[depth][i] = Math.random();
+      }
+    }
+
+    // Generate mining data for all depths up to maxDepth
+    for (let d = 0; d <= maxDepth; d++) {
+      generateMiningData(d);
+    }
+
+    // Draw a filled triangle given 3 points and fill style
+    function drawFilledTriangle(p1, p2, p3, fillStyle) {
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.closePath();
+      ctx.fillStyle = fillStyle;
+      ctx.fill();
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Recursive function to draw Sierpinski triangle with mining activity coloring
+    // p1, p2, p3 are points {x,y}
+    // depth is current recursion depth
+    // index is the index of the triangle at this depth (for mining data)
+    function drawSierpinski(p1, p2, p3, depth, index) {
+      if (depth === 0) {
+        // Base triangle: fill with color based on mining activity
+        const activity = miningData[currentDepth][index] || 0;
+        // Map activity to color intensity (greenish)
+        const greenIntensity = Math.floor(50 + activity * 205);
+        const color = `rgba(0, ${greenIntensity}, 0, 0.8)`;
+        drawFilledTriangle(p1, p2, p3, color);
+        return;
+      }
+      // Calculate midpoints
+      const mid12 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const mid23 = { x: (p2.x + p3.x) / 2, y: (p2.y + p3.y) / 2 };
+      const mid31 = { x: (p3.x + p1.x) / 2, y: (p3.y + p1.y) / 2 };
+
+      // Each subtriangle index calculation:
+      // For depth d, each triangle splits into 3 subtriangles indexed as:
+      // left: index * 3
+      // right: index * 3 + 1
+      // top: index * 3 + 2
+
+      drawSierpinski(p1, mid12, mid31, depth - 1, index * 3);
+      drawSierpinski(mid12, p2, mid23, depth - 1, index * 3 + 1);
+      drawSierpinski(mid31, mid23, p3, depth - 1, index * 3 + 2);
+    }
+
+    // Draw the full solid triangle (Genesis triad) with breakdown by depth
+    function drawTriad(depth) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      // Calculate triangle vertices for an equilateral triangle centered horizontally and vertically
+      const size = Math.min(width, height) * 0.9;
+      const heightTriangle = (size * Math.sqrt(3)) / 2;
+      const offsetX = (width - size) / 2;
+      const offsetY = (height - heightTriangle) / 2;
+
+      const p1 = { x: offsetX, y: offsetY + heightTriangle };
+      const p2 = { x: offsetX + size, y: offsetY + heightTriangle };
+      const p3 = { x: offsetX + size / 2, y: offsetY };
+
+      if (depth === 0) {
+        // Draw single solid triangle in white with subtle border
+        drawFilledTriangle(p1, p2, p3, 'rgba(255, 255, 255, 0.9)');
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        drawSierpinski(p1, p2, p3, depth, 0);
+      }
+    }
+
+    // Initial draw
+    drawTriad(currentDepth);
+    updateInfo();
+
+    // Update displayed info
+    function updateInfo() {
+      document.getElementById('triadDepthDisplay').textContent = currentDepth;
+      // Total transactions simulated as 1000 * 3^depth for demo
+      const totalTx = 1000 * Math.pow(3, currentDepth);
+      document.getElementById('totalTransactionsDisplay').textContent = totalTx.toLocaleString();
+    }
+
+    // Buttons to increase/decrease depth
+    document.getElementById('increaseDepthBtn').addEventListener('click', () => {
+      if (currentDepth < maxDepth) {
+        currentDepth++;
+        drawTriad(currentDepth);
+        updateInfo();
+      }
+    });
+    document.getElementById('decreaseDepthBtn').addEventListener('click', () => {
+      if (currentDepth > minDepth) {
+        currentDepth--;
+        drawTriad(currentDepth);
+        updateInfo();
+      }
+    });
+
+    // New code to hook up dashboard
+
+    // API base URL
+    const API_BASE_URL = 'http://127.0.0.1:8080/api';
+
+    // Elements
+    const createWalletBtn = document.getElementById('createWalletBtn');
+    const signInWalletBtn = document.getElementById('signInWalletBtn');
+
+    // State
+    let currentWalletAddress = null;
+
+    // Create Wallet event handler
+    createWalletBtn.addEventListener('click', async () => {
+      const userId = prompt('Enter user ID to create wallet:');
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/create_wallet`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId }),
+        });
+        if (!response.ok) throw new Error('Failed to create wallet');
+        const data = await response.json();
+        currentWalletAddress = data.address;
+        alert(`Wallet created with address: ${currentWalletAddress}`);
+        updateDashboard();
+      } catch (error) {
+        alert('Error creating wallet: ' + error.message);
+      }
+    });
+
+    // Sign In Wallet event handler
+    signInWalletBtn.addEventListener('click', async () => {
+      const address = prompt('Enter wallet address to sign in:');
+      if (!address) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/sign_in`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address }),
+        });
+        if (!response.ok) throw new Error('Wallet not found');
+        const data = await response.json();
+        currentWalletAddress = address;
+        alert(`Signed in. Balance: ${data.balance}`);
+        updateDashboard(data);
+      } catch (error) {
+        alert('Error signing in: ' + error.message);
+      }
+    });
+
+    // Update dashboard with wallet data
+    function updateDashboard(data) {
+      if (!data && !currentWalletAddress) return;
+
+      if (!data) {
+        // Fetch data for current wallet
+        fetch(\`\${API_BASE_URL}/sign_in\`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: currentWalletAddress }),
+        })
+          .then((res) => res.json())
+          .then((walletData) => {
+            displayWalletData(walletData);
+          })
+          .catch((err) => {
+            console.error('Failed to fetch wallet data', err);
+          });
+      } else {
+        displayWalletData(data);
+      }
+    }
+
+    // Display wallet data in dashboard
+    function displayWalletData(walletData) {
+      // Update staking portfolio overview (example)
+      const totalStakedElem = document.querySelector('#staking p.text-3xl.font-bold');
+      if (totalStakedElem) {
+        totalStakedElem.textContent = walletData.balance + ' WAC';
+      }
+
+      // Update other dashboard elements as needed
+      // For demo, just log transactions
+      console.log('Transactions:', walletData.transactions);
+    }
+
+    // Initial dashboard update
+    updateDashboard();
+
+  </script>
+ </body>
+</html>
