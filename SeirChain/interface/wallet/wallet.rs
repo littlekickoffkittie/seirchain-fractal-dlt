@@ -116,7 +116,6 @@ impl Wallet {
         let transactions = self.ledger.get_recent_transactions();
         transactions.into_iter()
             .filter(|tx| tx.from == address || tx.to == address)
-            .cloned()
             .collect()
     }
 }
