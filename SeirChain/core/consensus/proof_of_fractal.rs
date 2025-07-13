@@ -59,7 +59,14 @@ impl ProofOfFractal {
     /// Returns true if a valid nonce is found.
     pub fn solve_puzzle(&self, data: &[u8]) -> bool {
         let mut rng = OsRng;
+        let start_time = std::time::Instant::now();
+        let timeout = std::time::Duration::from_secs(60); // 1 minute timeout
+
         loop {
+            if start_time.elapsed() > timeout {
+                return false;
+            }
+
             let nonce_candidate = rng.next_u64();
             let mut hasher = Sha256::new();
             hasher.update(data);
@@ -86,16 +93,15 @@ impl ProofOfFractal {
             return true;
         }
         let pattern = &hash[0..pattern_length];
-        let mut repetitions = 0;
         for i in (pattern_length..hash.len()).step_by(pattern_length) {
             if i + pattern_length > hash.len() {
                 break;
             }
             if &hash[i..i + pattern_length] == pattern {
-                repetitions += 1;
+                return true;
             }
         }
-        repetitions >= 1
+        false
     }
 
     /// Verifies that the current nonce produces a valid hash below the target.
