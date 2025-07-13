@@ -29,7 +29,7 @@ impl HierarchicalRecursiveConsensus {
 
 
     /// Runs the recursive consensus algorithm with simulated network communication and fault handling.
-    pub fn run_consensus(&mut self) -> bool {
+    pub fn run_consensus<R: rand::Rng>(&mut self, rng: &mut R) -> bool {
         // Step 1: Propose value (simulate proposal)
         let proposal = "block_data";
 
@@ -41,7 +41,7 @@ impl HierarchicalRecursiveConsensus {
         // Step 3: Simulate message exchange with possible faults
         for node in &self.nodes {
             // Simulate a node failing to vote with a small probability
-            let vote = if rand::random::<f32>() < 0.9 { "vote" } else { "fault" };
+            let vote = if rng.gen::<f32>() < 0.9 { "vote" } else { "fault" };
             self.state.insert(node.clone(), vote.to_string());
             // Add active path for each node vote
             if vote == "vote" {
@@ -75,12 +75,15 @@ impl HierarchicalRecursiveConsensus {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::prelude::*;
+    use rand_chacha::ChaCha8Rng;
 
     #[test]
     fn test_hierarchical_recursive_consensus() {
         let nodes = vec!["node1".to_string(), "node2".to_string(), "node3".to_string(), "node4".to_string()];
         let mut hrc = HierarchicalRecursiveConsensus::new(nodes, 1, 4);
-        assert!(hrc.run_consensus());
+        let mut rng = ChaCha8Rng::seed_from_u64(1);
+        assert!(hrc.run_consensus(&mut rng));
         assert!(hrc.validate_subfractal());
     }
 }

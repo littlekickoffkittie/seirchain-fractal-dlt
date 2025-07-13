@@ -12,15 +12,17 @@ pub struct WaclaniumToken {
     max_supply: u64,
     /// Governance proposals mapped by proposal ID to description.
     governance_proposals: HashMap<u64, String>,
-    /// Votes mapped by proposal ID to set of voters.
-    votes: HashMap<u64, HashSet<String>>,
+    /// Votes mapped by proposal ID to votes for and against.
+    votes: HashMap<u64, (HashSet<String>, HashSet<String>)>,
     /// Next proposal ID to assign.
     next_proposal_id: u64,
+    /// Transaction fee.
+    fee: u64,
 }
 
 impl WaclaniumToken {
     /// Creates a new WaclaniumToken with initial and max supply.
-    pub fn new(initial_supply: u64, max_supply: u64) -> Self {
+    pub fn new(initial_supply: u64, max_supply: u64, fee: u64) -> Self {
         let mut balances = HashMap::new();
         balances.insert("genesis".to_string(), initial_supply);
         WaclaniumToken {
@@ -31,6 +33,7 @@ impl WaclaniumToken {
             governance_proposals: HashMap::new(),
             votes: HashMap::new(),
             next_proposal_id: 1,
+            fee,
         }
     }
 
@@ -49,14 +52,14 @@ impl WaclaniumToken {
     pub fn create_proposal(&mut self, description: String) -> u64 {
         let proposal_id = self.next_proposal_id;
         self.governance_proposals.insert(proposal_id, description);
-        self.votes.insert(proposal_id, HashSet::new());
+        self.votes.insert(proposal_id, (HashSet::new(), HashSet::new()));
         self.next_proposal_id += 1;
         proposal_id
     }
 
     /// Casts a vote for a proposal by a user.
     /// Returns an error if proposal does not exist, user has no stake, or user already voted.
-    pub fn cast_vote(&mut self, user: &str, proposal_id: u64) -> Result<(), String> {
+    pub fn cast_vote(&mut self, user: &str, proposal_id: u64, vote_for: bool) -> Result<(), String> {
         if !self.governance_proposals.contains_key(&proposal_id) {
             return Err("Proposal does not exist".to_string());
         }
@@ -64,18 +67,22 @@ impl WaclaniumToken {
         if stake == 0 {
             return Err("User has no stake to vote".to_string());
         }
-        let voters = self.votes.get_mut(&proposal_id).unwrap();
-        if voters.contains(user) {
+        let (voters_for, voters_against) = self.votes.get_mut(&proposal_id).unwrap();
+        if voters_for.contains(user) || voters_against.contains(user) {
             return Err("User has already voted".to_string());
         }
-        voters.insert(user.to_string());
+        if vote_for {
+            voters_for.insert(user.to_string());
+        } else {
+            voters_against.insert(user.to_string());
+        }
         Ok(())
     }
 
     /// Checks if a user has voted on a proposal.
     pub fn has_voted(&self, user: &str, proposal_id: u64) -> bool {
-        if let Some(voters) = self.votes.get(&proposal_id) {
-            voters.contains(user)
+        if let Some((voters_for, voters_against)) = self.votes.get(&proposal_id) {
+            voters_for.contains(user) || voters_against.contains(user)
         } else {
             false
         }
@@ -85,12 +92,15 @@ impl WaclaniumToken {
     /// Returns an error if sender has insufficient balance.
     pub fn transfer(&mut self, from: &str, to: &str, amount: u64) -> Result<(), String> {
         let from_balance = self.balances.get(from).cloned().unwrap_or(0);
-        if from_balance < amount {
+        let fee = self.fee;
+        if from_balance < amount + fee {
             return Err("Insufficient balance".to_string());
         }
-        self.balances.insert(from.to_string(), from_balance - amount);
+        self.balances.insert(from.to_string(), from_balance - amount - fee);
         let to_balance = self.balances.get(to).cloned().unwrap_or(0);
         self.balances.insert(to.to_string(), to_balance + amount);
+        let genesis_balance = self.balances.get("genesis").cloned().unwrap_or(0);
+        self.balances.insert("genesis".to_string(), genesis_balance + fee);
         Ok(())
     }
 
@@ -142,25 +152,91 @@ impl WaclaniumToken {
         self.stakes.get(user).cloned().unwrap_or(0)
     }
 
-    /// Placeholder for quadratic voting logic.
-    /// Returns true if votes are less than or equal to user's stake.
-    pub fn governance_vote(&self, user: &str, votes: u64) -> bool {
-        let stake = self.stakes.get(user).cloned().unwrap_or(0);
-        votes <= stake
+    /// Calculates the voting power of a user based on their stake.
+    /// The voting power is the square root of the stake.
+    pub fn get_voting_power(&self, user: &str) -> u64 {
+        let stake = self.get_stake(user);
+        (stake as f64).sqrt() as u64
     }
 
-    /// Tallies votes for a proposal and returns the number of votes cast.
+    /// Tallies votes for a proposal and returns the total voting power for and against.
     /// Returns None if the proposal does not exist.
-    pub fn tally_votes(&self, proposal_id: u64) -> Option<usize> {
-        self.votes.get(&proposal_id).map(|voters| voters.len())
+    pub fn tally_votes(&self, proposal_id: u64) -> Option<(u64, u64)> {
+        self.votes.get(&proposal_id).map(|(voters_for, voters_against)| {
+            let votes_for = voters_for
+                .iter()
+                .map(|voter| self.get_voting_power(voter))
+                .sum();
+            let votes_against = voters_against
+                .iter()
+                .map(|voter| self.get_voting_power(voter))
+                .sum();
+            (votes_for, votes_against)
+        })
     }
 
-    /// Checks if a proposal has passed based on a simple majority.
+    /// Checks if a proposal has passed.
+    /// A proposal passes if the total voting power of "for" votes is greater than the total voting power of "against" votes.
     /// Returns None if the proposal does not exist.
     pub fn proposal_passed(&self, proposal_id: u64) -> Option<bool> {
-        let total_votes = self.tally_votes(proposal_id)?;
-        // For simplicity, assume majority is more than half of total staked tokens
-        let total_stake: u64 = self.stakes.values().sum();
-        Some((total_votes as u64) > total_stake / 2)
+        self.tally_votes(proposal_id)
+            .map(|(votes_for, votes_against)| votes_for > votes_against)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_waclanium_token() {
+        let token = WaclaniumToken::new(1000, 10000, 1);
+        assert_eq!(token.get_balance("genesis"), 1000);
+    }
+
+    #[test]
+    fn test_transfer() {
+        let mut token = WaclaniumToken::new(1000, 10000, 1);
+        token.mint("user1", 100).unwrap();
+        assert!(token.transfer("user1", "user2", 50).is_ok());
+        assert_eq!(token.get_balance("user1"), 49);
+        assert_eq!(token.get_balance("user2"), 50);
+        assert_eq!(token.get_balance("genesis"), 1001);
+    }
+
+    #[test]
+    fn test_stake_and_unstake() {
+        let mut token = WaclaniumToken::new(1000, 10000, 1);
+        token.mint("user1", 100).unwrap();
+        assert!(token.stake("user1", 50).is_ok());
+        assert_eq!(token.get_balance("user1"), 50);
+        assert_eq!(token.get_stake("user1"), 50);
+        assert!(token.unstake("user1", 50).is_ok());
+        assert_eq!(token.get_balance("user1"), 100);
+        assert_eq!(token.get_stake("user1"), 0);
+    }
+
+    #[test]
+    fn test_mint() {
+        let mut token = WaclaniumToken::new(1000, 10000, 1);
+        assert!(token.mint("user1", 100).is_ok());
+        assert_eq!(token.get_balance("user1"), 100);
+        assert_eq!(token.total_supply, 1100);
+    }
+
+    #[test]
+    fn test_governance() {
+        let mut token = WaclaniumToken::new(1000, 10000, 1);
+        token.mint("user1", 100).unwrap();
+        token.stake("user1", 100).unwrap();
+        token.mint("user2", 100).unwrap();
+        token.stake("user2", 25).unwrap();
+        let proposal_id = token.create_proposal("Test proposal".to_string());
+        assert!(token.cast_vote("user1", proposal_id, true).is_ok());
+        assert!(token.cast_vote("user2", proposal_id, false).is_ok());
+        assert!(token.has_voted("user1", proposal_id));
+        assert!(token.has_voted("user2", proposal_id));
+        assert_eq!(token.tally_votes(proposal_id), Some((10, 5)));
+        assert_eq!(token.proposal_passed(proposal_id), Some(true));
     }
 }

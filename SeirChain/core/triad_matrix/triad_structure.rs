@@ -140,3 +140,93 @@ impl ProofOfFractalData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_triad() {
+        let triad = Triad::new();
+        assert!(triad.transactions.is_empty());
+        assert!(triad.child_references.iter().all(|c| c.is_none()));
+        assert_eq!(triad.merkle_root, [0u8; 32]);
+        assert_eq!(triad.parent_hash, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_genesis_triad() {
+        let tx = Transaction {
+            sender: "genesis".to_string(),
+            receiver: "user1".to_string(),
+            amount: 100,
+            timestamp: 0,
+        };
+        let triad = Triad::genesis(Some(vec![tx]));
+        assert_eq!(triad.transactions.len(), 1);
+        assert_ne!(triad.merkle_root, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_insert_transaction() {
+        let mut triad = Triad::new();
+        let tx = Transaction {
+            sender: "user1".to_string(),
+            receiver: "user2".to_string(),
+            amount: 50,
+            timestamp: 1,
+        };
+        triad.insert_transaction(tx);
+        assert_eq!(triad.transactions.len(), 1);
+        assert_ne!(triad.merkle_root, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_add_remove_child() {
+        let mut parent = Triad::new();
+        let child = Triad::new();
+        assert!(parent.add_child(0, child).is_ok());
+        assert!(parent.child_references[0].is_some());
+        assert!(parent.remove_child(0).is_ok());
+        assert!(parent.child_references[0].is_none());
+    }
+
+    #[test]
+    fn test_clear_transactions() {
+        let mut triad = Triad::new();
+        let tx = Transaction {
+            sender: "user1".to_string(),
+            receiver: "user2".to_string(),
+            amount: 50,
+            timestamp: 1,
+        };
+        triad.insert_transaction(tx);
+        triad.clear_transactions();
+        assert!(triad.transactions.is_empty());
+        assert_eq!(triad.merkle_root, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_transaction_hash() {
+        let tx1 = Transaction {
+            sender: "user1".to_string(),
+            receiver: "user2".to_string(),
+            amount: 50,
+            timestamp: 1,
+        };
+        let tx2 = Transaction {
+            sender: "user1".to_string(),
+            receiver: "user2".to_string(),
+            amount: 50,
+            timestamp: 1,
+        };
+        let tx3 = Transaction {
+            sender: "user2".to_string(),
+            receiver: "user1".to_string(),
+            amount: 50,
+            timestamp: 1,
+        };
+        assert_eq!(tx1.hash(), tx2.hash());
+        assert_ne!(tx1.hash(), tx3.hash());
+    }
+}

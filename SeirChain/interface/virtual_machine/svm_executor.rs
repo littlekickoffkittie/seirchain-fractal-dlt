@@ -60,3 +60,65 @@ impl SvmExecutor {
         self.contract_states.contains_key(contract_id)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_svm_executor() {
+        let svm = SvmExecutor::new();
+        assert!(svm.contract_states.is_empty());
+        assert!(svm.execution_queue.is_empty());
+    }
+
+    #[test]
+    fn test_execute_contract() {
+        let mut svm = SvmExecutor::new();
+        let contract_id = "contract1";
+        let input = b"input data";
+        let output = svm.execute_contract(contract_id, input).unwrap();
+        assert_eq!(output, input);
+        assert_eq!(svm.get_contract_state(contract_id), Some(&input.to_vec()));
+    }
+
+    #[test]
+    fn test_get_contract_state() {
+        let mut svm = SvmExecutor::new();
+        let contract_id = "contract1";
+        let input = b"input data";
+        svm.execute_contract(contract_id, input).unwrap();
+        assert_eq!(svm.get_contract_state(contract_id), Some(&input.to_vec()));
+    }
+
+    #[test]
+    fn test_remove_contract_state() {
+        let mut svm = SvmExecutor::new();
+        let contract_id = "contract1";
+        let input = b"input data";
+        svm.execute_contract(contract_id, input).unwrap();
+        assert!(svm.remove_contract_state(contract_id));
+        assert!(!svm.remove_contract_state(contract_id));
+    }
+
+    #[test]
+    fn test_clear_contract_states() {
+        let mut svm = SvmExecutor::new();
+        let contract_id = "contract1";
+        let input = b"input data";
+        svm.execute_contract(contract_id, input).unwrap();
+        svm.clear_contract_states();
+        assert!(svm.contract_states.is_empty());
+    }
+
+    #[test]
+    fn test_contract_exists() {
+        let mut svm = SvmExecutor::new();
+        let contract_id = "contract1";
+        let input = b"input data";
+        svm.execute_contract(contract_id, input).unwrap();
+        assert!(svm.contract_exists(contract_id));
+        svm.remove_contract_state(contract_id);
+        assert!(!svm.contract_exists(contract_id));
+    }
+}

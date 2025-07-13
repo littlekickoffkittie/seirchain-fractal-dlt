@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::core::security::redundant_paths::RedundantPathSecurity;
+    use seirchain::core::security::redundant_paths::RedundantPathSecurity;
 
     #[test]
     fn test_add_and_remove_path() {
