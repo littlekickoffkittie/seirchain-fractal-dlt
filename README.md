@@ -1,7 +1,7 @@
 # SeirChain: A Fractal-Based Distributed Ledger
 
 <p align="center">
-  <img src="https://placehold.co/600x300/0D1117/FFFFFF?text=SeirChain&font=raleway" alt="SeirChain Banner">
+  <img src="logo.png" alt="SeirChain Banner">
 </p>
 
 <p align="center">

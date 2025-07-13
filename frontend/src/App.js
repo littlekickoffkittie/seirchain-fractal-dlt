@@ -144,6 +144,7 @@ function App() {
       <div className="flex h-screen">
         <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
+            <img src="/logo.png" alt="SeirChain Logo" className="mx-auto mb-4" style={{ width: '100px' }} />
             <h1 className="text-2xl font-bold high-contrast-text">
               SEIRCHAIN
             </h1>
