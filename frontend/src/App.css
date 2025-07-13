@@ -1,0 +1,42 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+.dark .bg-gray-900 {
+    background-color: #000000;
+}
+.dark .bg-gray-800 {
+    background-color: #111111;
+}
+.dark .border-gray-700 {
+    border-color: #333333;
+}
+.dark .text-gray-200 {
+    color: #e5e7eb;
+}
+.dark .text-gray-400 {
+    color: #9ca3af;
+}
+.high-contrast-text {
+    color: white;
+}
+.chart-container {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+#triad-canvas {
+    width: 100%;
+    height: 400px;
+    display: block;
+    border-radius: 0.5rem;
+    cursor: grab;
+    background-color: #000000;
+}
+.animate-pulse-fast {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
