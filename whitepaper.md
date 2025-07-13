@@ -1,19 +1,19 @@
-# White Paper: SeirChain - A Fractal-Based Distributed Ledger System
+# White Paper: SeirChain - A Distributed Ledger System
 
 **Date**: June 13, 2025  
-**Author**: Lucian Bloodroot  
+**Author**: Yohishi Moni
 
 ---
 
 ## Abstract
 
-SeirChain is a transformative distributed ledger technology (DLT) that transcends linear blockchain constraints using a Sierpinski triangle-inspired **Triad Matrix**, a fractal structure with a dimension of ~1.585. The term "chain" bridges blockchain paradigms with this fractal ledger, organizing data into **Triads** for spatially constrained growth, parallel processing, and robust security. Powered by the **Waclanium (WAC)** token, SeirChain incentivizes participation, governance, and development. The **SeirChain Virtual Machine (SVM)** targets **1,000+ Transactions Per Second (TPS)** with sub-second confirmations. Designed to mitigate forks, as seen in Ethereum, through hierarchical consensus and decentralized governance, SeirChain offers a production-ready platform with quantum-resistant research goals and a fractal-organized codebase mirroring its architecture.
+SeirChain is a transformative distributed ledger technology (DLT) that transcends linear blockchain constraints using a Sierpinski triangle-inspired **Triad Matrix**. The term "chain" bridges blockchain paradigms with this novel ledger, organizing data into **Triads** for spatially constrained growth, parallel processing, and robust security. Powered by the **Waclanium (WAC)** token, SeirChain incentivizes participation, governance, and development. The **SeirChain Virtual Machine (SVM)** targets **1,000+ Transactions Per Second (TPS)** with sub-second confirmations. Designed to mitigate forks, as seen in Ethereum, through hierarchical consensus and decentralized governance, SeirChain offers a production-ready platform with quantum-resistant research goals.
 
 ---
 
 ## 1. Introduction
 
-SeirChain redefines DLT with the **Triad Matrix**, a Sierpinski triangle-inspired fractal ledger with a dimension of log(3)/log(2) ≈ 1.585. The term "chain" bridges blockchain thinking with this fractal reality, enabling spatially constrained growth for scalability. Unlike linear blockchains (e.g., Bitcoin, Ethereum), which face throughput limits and centralization due to full-replication, SeirChain uses **Triads**—data units with transactions, child references, Merkle roots, Proof-of-Fractal (PoF) data, and parent hashes. The **Waclanium (WAC)** token powers fees, rewards, governance, staking, and development. The **SeirChain Virtual Machine (SVM)** supports parallel smart contracts, targeting 1,000+ TPS. Drawing on non-linear DLTs and Hyper-simplex models, SeirChain mitigates forks, aims for quantum resistance, and provides a fractal-organized codebase for implementation. This paper details its architecture, implementation, and future directions.
+SeirChain redefines DLT with the **Triad Matrix**, a Sierpinski triangle-inspired ledger. The term "chain" bridges blockchain thinking with this novel structure, enabling spatially constrained growth for scalability. Unlike linear blockchains (e.g., Bitcoin, Ethereum), which face throughput limits and centralization due to full-replication, SeirChain uses **Triads**—data units with transactions, child references, Merkle roots, Proof-of-Fractal (PoF) data, and parent hashes. The **Waclanium (WAC)** token powers fees, rewards, governance, staking, and development. The **SeirChain Virtual Machine (SVM)** supports parallel smart contracts, targeting 1,000+ TPS. Drawing on non-linear DLTs, SeirChain mitigates forks, aims for quantum resistance, and provides a well-organized codebase for implementation. This paper details its architecture, implementation, and future directions.
 
 ---
 
@@ -31,7 +31,7 @@ Non-linear DLTs include:
 - **Directed Acyclic Graphs (DAGs)**: Parallel processing (e.g., IOTA: ~1,000 TPS).
 - **Holochain**: Agent-centric chains with DHTs, no global consensus.
 - **Tempo (Radix)**: Sharding for scalability (~1M TPS theoretical).
-SeirChain aligns with these, using fractal geometry for parallelism.
+SeirChain aligns with these, using a novel data structure for parallelism.
 
 **Table 1: Comparative Analysis**
 | DLT | TPS | Latency | Energy Use | Fork Resistance |
@@ -40,12 +40,6 @@ SeirChain aligns with these, using fractal geometry for parallelism.
 | Solana | ~65,000 | ~0.4s | Moderate | Low |
 | Polkadot | ~1,000 | ~6s | Low | High |
 | SeirChain | 1,000+ | <1s | Low | High |
-
-### 2.3 Fractal Geometry and Sierpinski Triangle
-The Sierpinski triangle, with dimension log(3)/log(2) ≈ 1.585, supports:
-- **Hierarchy**: Data partitioning.
-- **Parallelism**: Concurrent operations.
-- **Redundancy**: Multiple paths.
 
 ### 2.4 Mitigating Fork Risks: Lessons from Ethereum
 Ethereum’s forks include:
@@ -91,7 +85,7 @@ SeirChain mitigates forks via:
                 - **Complexity**: O(log N) messages, D ≈ (log_2V/log_2(2N))t_{ave}.
                 - **Security**: BFT guarantees 1/3 fault tolerance per sub-fractal.
 
-                ### 3.3 Fractal Merkle Anchor (FMA) - Immutability
+                ### 3.3 Merkle Anchor (FMA) - Immutability
                 **Purpose**: Ensures tamper resistance.
 
                 **Design**:
@@ -108,7 +102,7 @@ SeirChain mitigates forks via:
                 - Dynamic promotion (PoF performance, uptime).
                 - Anti-Sybil identity checks.
 
-                ### 3.5 Multi-Path Fractal Routing (MPFR) - Routing
+                ### 3.5 Multi-Path Routing (MPR) - Routing
                 **Purpose**: Routes transactions efficiently.
 
                 **Design**:
@@ -138,8 +132,6 @@ SeirChain mitigates forks via:
 
                 ## 4. Theoretical Foundations
 
-                - **Fractal Geometry**: Sierpinski dimension log(3)/log(2) ≈ 1.585 [1].
-                - **Hyper-simplex**: Node growth |V_{N,m}| ≈ 2^{m-2}N^m [2].
                 - **Consensus**: Multi-Layer PBFT [3].
                 - **Parallelism**: Delta Live Tables [4].
                 - **Mathematics**: Triad insertion O(log N), HRC message complexity O(log N).
@@ -159,43 +151,6 @@ SeirChain mitigates forks via:
                 - **Bridges**: Cosmos IBC for Ethereum/Solana integration.
                 - **Challenges**: Regulatory uncertainty, costs, user resistance.
                 - **Solutions**: Standards, education, WAC incentives.
-
-                ### 5.3 Fractal File Structure
-                SeirChain’s codebase mirrors its fractal architecture, organized as a recursive, triangular hierarchy.
-
-                **Root Triangle (Level 0)**:
-                SeirChain/ ├── Core/ ├── Network/ └── Interface/
-                **Level 1 - Primary Triads**:
-                - **Core/**: Foundation triangle.
-                Core/ ├── TriadMatrix/ │ ├── triad_structure.rs │ ├── fractal_geometry.rs │ └── merkle_anchor.rs ├── Consensus/ │ ├── proof_of_fractal.rs │ ├── hierarchical_recursive.rs │ └── byzantine_tolerance.rs └── Security/ ├── redundant_paths.rs ├── cryptographic_integrity.rs └── quantum_resistance.rs
-                - **Network/**: Communication triangle.
-                Network/ ├── Routing/ │ ├── multi_path_fractal.rs │ ├── ternary_coordinates.rs │ └── load_balancing.rs ├── Protocol/ │ ├── network_dynamics.rs │ ├── partition_recovery.rs │ └── synchronization.rs └── Validation/ ├── transaction_validation.rs ├── state_management.rs └── finality_guarantees.rs
-                - **Interface/**: Application triangle.
-                Interface/ ├── VirtualMachine/ │ ├── svm_executor.rs │ ├── parallel_processing.rs │ └── smart_contracts.rs ├── Economics/ │ ├── waclanium_token.rs │ ├── governance_system.rs │ └── incentive_mechanisms.rs └── Applications/ ├── defi_protocols.rs ├── supply_chain.rs └── energy_trading.rs
-                **Level 2 - Secondary Triads (Example)**:
-                - **Core/TriadMatrix/**:
-                TriadMatrix/ ├── Structure/ │ ├── node_management.rs │ ├── parent_child_links.rs │ ├── subscript_addressing.rs ├── Operations/ │ ├── triad_creation.rs │ ├── data_insertion.rs │ ├── query_processing.rs └── Optimization/ ├── space_complexity.rs ├── time_complexity.rs ├── compression_algorithms.rs
-                **Level 3 - Tertiary Triads (Example)**:
-                - **Core/TriadMatrix/Structure/**:
-                Structure/ ├── Nodes/ │ ├── node_creation.rs │ ├── node_deletion.rs │ ├── node_migration.rs ├── Links/ │ ├── parent_references.rs │ ├── child_pointers.rs │ ├── sibling_connections.rs └── Addressing/ ├── coordinate_generation.rs ├── address_validation.rs ├── lookup_optimization.rs
-                **Configuration & Utilities**:
-                SeirChain/ ├── Config/ │ ├── network_parameters.toml │ ├── consensus_settings.toml │ ├── economic_parameters.toml ├── Tests/ │ ├── unit_tests/ │ ├── integration_tests/ │ ├── performance_tests/ ├── Documentation/ │ ├── technical_specs/ │ ├── api_documentation/ │ ├── user_guides/ └── Tools/ ├── simulation/ ├── monitoring/ ├── deployment/
-                **File Descriptions** (Summarized):
-                - **Core/TriadMatrix/triad_structure.rs**: Defines Triad structure, core dependency.
-                - **Core/Consensus/proof_of_fractal.rs**: PoF puzzle implementation, links to incentives.
-                - **Core/Security/redundant_paths.rs**: RPSF multi-path validation, integrates with routing.
-                - **Network/Routing/multi_path_fractal.rs**: MPFR ternary coordinate routing.
-                - **Network/Protocol/network_dynamics.rs**: Node join/leave, topology maintenance.
-                - **Interface/VirtualMachine/svm_executor.rs**: SVM execution engine.
-                - **Interface/Economics/waclanium_token.rs**: WAC token logic, governance.
-
-                **Relationships**:
-                - High interdependency: `triad_structure.rs` (core data structure), `hierarchical_recursive.rs` (consensus), `multi_path_fractal.rs` (routing), `waclanium_token.rs` (economics).
-                - Medium interdependency: PoF with incentives, RPSF with load balancing, SVM with parallel processing.
-                - Low interdependency: Quantum resistance, application-specific modules.
-                - No dependencies: Configuration, tests, documentation, tools.
-
-                This fractal file structure ensures the codebase reflects SeirChain’s recursive architecture, enhancing modularity and scalability.
 
                 ---
 
@@ -218,13 +173,11 @@ SeirChain mitigates forks via:
                 ---
 
                 ## 8. Conclusion
-                SeirChain’s Triad Matrix offers a fractal-based DLT with scalability, resilience, and fork resistance. With **PoF/HRC**, **FMA**, **RPSF**, **MPFR**, **SVM**, and **WAC**, it achieves 1,000+ TPS and sub-second confirmations, ready for production use with quantum-resistant potential.
+SeirChain’s Triad Matrix offers a novel DLT with scalability, resilience, and fork resistance. With **PoF/HRC**, **FMA**, **RPSF**, **MPR**, **SVM**, and **WAC**, it achieves 1,000+ TPS and sub-second confirmations, ready for production use with quantum-resistant potential.
 
                 ---
 
                 ## Appendix A: Mathematical Proofs
-                - **Fractal Dimension**: D = log(3)/log(2) ≈ 1.585.
-                - **Node Growth**: |V_{N,m}| ≈ 2^{m-2}N^m, derived recursively.
                 - **Complexity**: Triad insertion O(log N), HRC O(log N) messages.
 
                 ---
