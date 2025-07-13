@@ -1,8 +1,3 @@
-
-Built by https://www.blackbox.ai
-
----
-
 # SeirChain - A Fractal-Based Distributed Ledger System
 
 ## Project Overview
