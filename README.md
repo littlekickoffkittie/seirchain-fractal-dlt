@@ -1,100 +1,34 @@
-# SeirChain - A Fractal-Based Distributed Ledger System
+SeirChain: A Fractal-Based Distributed Ledger<p align="center"><img src="https://placehold.co/600x300/0D1117/FFFFFF?text=SeirChain&font=raleway" alt="SeirChain Banner"></p><p align="center"><strong>An innovative distributed ledger technology employing a fractal design for unparalleled scalability and security.</strong><br /><br /><a href="#">View Demo</a>·<a href="#">Report Bug</a>·<a href="#">Request Feature</a></p><p align="center"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"><img src="https://img.shields.io/badge/node-18.x-green.svg" alt="Node Version"><img src="https://img.shields.io/github/stars/yourusername/seirchain?style=social" alt="GitHub Stars"></p>About The ProjectSeirChain revolutionizes traditional blockchain structures by employing a fractal design inspired by the Sierpinski triangle. This unique architecture, the Triad Matrix, facilitates a highly organized and efficient data structure. It allows for spatially constrained growth, massive parallel processing capabilities, and a robust security model.SeirChain is engineered for high performance, targeting over 1,000 Transactions Per Second (TPS) with sub-second finality while inherently preventing forks. The native Waclanium (WAC) token is the lifeblood of the SeirChain ecosystem, powering transaction fees, governance participation, and network incentives.Key InnovationsTriad Matrix: A fractal data structure that allows for a hierarchical and organized ledger, enabling efficient transaction management and queries.Proof-of-Fractal (PoF): A novel consensus mechanism that leverages the fractal nature of the ledger to achieve consensus efficiently and securely.Parallel Smart Contracts: The SeirChain Virtual Machine (SVM) is designed to execute smart contracts in parallel, breaking the sequential execution bottleneck of older platforms.Redundant Path Security Framework (RPSF): An enhanced security model that uses multi-path fractal routing to ensure data integrity and prevent attacks.Table of ContentsGetting StartedPrerequisitesInstallationUsageProject StructureCore FeaturesContributingLicenseContactAcknowledgmentsGetting StartedFollow these instructions to get a local instance of SeirChain up and running for development and testing purposes.PrerequisitesEnsure you have the latest version of Node.js and npm installed on your machine.npmnpm install npm@latest -g
 
-## Project Overview
-SeirChain is an innovative distributed ledger technology (DLT) that revolutionizes traditional blockchain structures by employing a fractal design inspired by the Sierpinski triangle. This architecture, termed the **Triad Matrix**, allows for efficient data organization, enabling spatially constrained growth, increased parallel processing capabilities, and enhanced security. The platform aims to achieve over **1,000 Transactions Per Second (TPS)** with sub-second confirmation times while mitigating issues such as forks. The **Waclanium (WAC)** token is integral to the SeirChain ecosystem, facilitating fees, governance, and incentives.
+InstallationClone the Repositorygit clone https://github.com/yourusername/seirchain.git
+cd seirchain
 
-## Installation
-To set up SeirChain on your local machine, follow these steps:
+Install Dependenciesnpm install
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/seirchain.git
-   cd seirchain
-   ```
+ConfigurationNavigate to the Config/ directory. Modify the parameters in network_parameters.toml, consensus_settings.toml, and economic_parameters.toml to fit your desired network configuration.Start a Nodenpm start
 
-2. **Install dependencies:**
-   Ensure that you have Node.js and npm installed. Then, run:
-   ```bash
-   npm install
-   ```
+Your node is now running and will attempt to connect to peers specified in your configuration.UsageOnce your node is running, you can interact with the SeirChain network through its command-line interface (CLI) or by building frontend applications that connect to its API.Create a new Triad (Submit a Transaction):seir-cli tx send <from_address> <to_address> <amount> --token WAC
 
-3. **Configuration:**
-   Configure the initial settings in the `Config` folder. Modify parameters in the `network_parameters.toml`, `consensus_settings.toml`, and `economic_parameters.toml` files as needed.
+Query a Transaction:seir-cli query tx <transaction_hash>
 
-4. **Start the node:**
-   To start a node, use:
-   ```bash
-   npm start
-   ```
+Deploy a Smart Contract:seir-cli deploy <path_to_contract_wasm> --gas-limit 500000
 
-## Usage
-Once you have successfully installed SeirChain, you can interact with the system through the command line or frontend interfaces (if available). The usage examples include:
+Project StructureThe SeirChain codebase is organized to mirror its fractal architecture, promoting modularity and clarity.SeirChain/
+├── Core/               # Core logic of the ledger
+│   ├── TriadMatrix/    # Implementation of the fractal data structure
+│   ├── Consensus/      # Proof-of-Fractal and other consensus logic
+│   └── Security/       # RPSF and other security implementations
+├── Network/            # P2P networking and communication
+│   ├── Routing/        # Fractal routing algorithms
+│   ├── Protocol/       # Node-to-node communication protocol
+│   └── Validation/     # Transaction and block validation rules
+├── Interface/          # Interfaces for interacting with the core
+│   ├── VirtualMachine/ # SeirChain Virtual Machine (SVM) for smart contracts
+│   ├── Economics/      # WAC tokenomics and fee structures
+│   └── Applications/   # Example dApps and client-side libraries
+├── Config/             # Node configuration files
+├── Tests/              # Unit, integration, and performance tests
+├── Documentation/      # Technical specs, API docs, and user guides
+└── Tools/              # Simulation, monitoring, and deployment scripts
 
-- **Creating a new Triad:** Sending commands via the CLI to add transactions.
-- **Querying transactions:** Use the query commands to retrieve data stored in the Triad Matrix.
-- **Running smart contracts:** Deploy and execute parallel smart contracts using the SeirChain Virtual Machine (SVM).
-
-## Features
-- **Triad Matrix:** A unique data structure allowing organized hierarchies and efficient transaction management.
-- **Waclanium Token (WAC):** Fuels transactions, governance, and user incentives within the SeirChain ecosystem.
-- **SeirChain Virtual Machine (SVM):** Executes smart contracts in parallel, targeting 1,000+ TPS with low latency.
-- **Robust Security Mechanisms:** Utilizes Proof-of-Fractal and Redundant Path Security Framework (RPSF) to ensure security and minimize the risk of forks.
-- **Fractal Routing:** Multi-path fractal routing ensures efficient transaction processing and load balancing.
-
-## Dependencies
-The following dependencies are defined in the `package.json` file:
-- `express`: For managing web server functions.
-- `mongoose`: For MongoDB object modeling.
-- `web3`: Integration with Ethereum-related functions.
-- Any additional libraries as specified in `package.json`, required for running the application.
-
-## Project Structure
-The SeirChain codebase is organized according to its fractal architecture:
-
-```
-SeirChain/
-├── Core/
-│   ├── TriadMatrix/
-│   ├── Consensus/
-│   └── Security/
-├── Network/
-│   ├── Routing/
-│   ├── Protocol/
-│   └── Validation/
-├── Interface/
-│   ├── VirtualMachine/
-│   ├── Economics/
-│   └── Applications/
-├── Config/
-│   ├── network_parameters.toml
-│   ├── consensus_settings.toml
-│   └── economic_parameters.toml
-├── Tests/
-│   ├── unit_tests/
-│   ├── integration_tests/
-│   └── performance_tests/
-├── Documentation/
-│   ├── technical_specs/
-│   ├── api_documentation/
-│   └── user_guides/
-└── Tools/
-    ├── simulation/
-    ├── monitoring/
-    └── deployment/
-```
-
-### File Descriptions
-- **Core/TriadMatrix/**: Contains the implementation of the Triad structure and related algorithms.
-- **Core/Consensus/**: Includes consensus algorithms like Proof-of-Fractal.
-- **Core/Security/**: Implements security measures to enhance network integrity.
-- **Network/**: Manages network-related functionalities including routing and protocol management.
-- **Interface/**: Handles user interface functionalities, integrating with smart contracts and economic systems.
-- **Config/**: Handles configuration settings for the overall system.
-- **Tests/**: Contains testing suites to ensure stability and functionality.
-- **Documentation/**: Provides technical specifications, API documentation, and user guides.
-- **Tools/**: Contains tools for simulation, monitoring, and deployment.
-
-## Conclusion
-SeirChain presents a groundbreaking approach to decentralized technologies through the use of fractal geometry. Its unique architecture not only addresses the limitations of traditional blockchains but also paves the way for future advancements in scalability, security, and parallel processing. Join the SeirChain community and explore the potential of this revolutionary distributed ledger!
-
-For more details, check out the [White Paper](whitepaper.md).
+Core Features✅ High Throughput: Targeting 1,000+ TPS with low latency.🔒 Enhanced Security: Proof-of-Fractal and Redundant Path Security Framework (RPSF).⚙️ Parallel Processing: SeirChain Virtual Machine (SVM) executes smart contracts concurrently.🌐 Efficient Routing: Multi-path fractal routing ensures optimal load balancing.🪙 Native Token: Waclanium (WAC) for fees, staking, and governance.🚫 Fork Resistant: Architecture designed to minimize the risk of network forks.ContributingContributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.Fork the ProjectCreate your Feature Branch (git checkout -b feature/AmazingFeature)Commit your Changes (git commit -m 'Add some AmazingFeature')Push to the Branch (git push origin feature/AmazingFeature)Open a Pull RequestPlease read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests to us.LicenseDistributed under the MIT License. See LICENSE for more information.ContactProject Link:https://github.com/littlekickoffkittie/seirchain-fractal-dltFor more details, please refer to the Project White Paper.
