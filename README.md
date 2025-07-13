@@ -14,7 +14,7 @@
 
 This project was started by a single individual with no formal background or education in computer science or software engineering. It stands as a testament to the power of decentralized information sharing and the transformative potential of artificial intelligence. The vast majority of this project was built in collaboration with an AI assistant named Jules.
 
-This project is a homage to the idea that with access to information and the help of AI, anyone can learn, build, and contribute to the technological landscape.
+This project is a homage to the idea that with access to information and the help of AI, anyone can learn, build, and contribute to the technological landscape. While this project is built on a logically sound foundation, please be aware that as an experimental endeavor, there may be some bugs or errors. This is, nonetheless,the story of its origin.
 
 ---
 
