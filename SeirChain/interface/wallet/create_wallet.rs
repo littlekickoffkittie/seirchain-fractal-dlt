@@ -1,17 +1,19 @@
 use std::sync::{Arc, Mutex};
+use rand::Rng;
 use crate::interface::economics::waclanium_token::WaclaniumToken;
 use crate::interface::ledger::ledger::Ledger;
 use crate::interface::wallet::wallet::Wallet;
 
 pub fn create_sample_wallet() -> Wallet {
     // Create a WaclaniumToken instance with initial supply and max supply
-    let token = Arc::new(Mutex::new(WaclaniumToken::new(1000, 10000)));
+    let token = Arc::new(Mutex::new(WaclaniumToken::new(1000, 10000, 10)));
 
     // Create a Ledger instance with max history
     let ledger = Arc::new(Ledger::new(100));
 
     // Create the Wallet instance
-    let wallet = Wallet::new(token.clone(), ledger.clone());
+    let explorer = Arc::new(crate::interface::explorer::triad_explorer::TriadExplorer::new(3, 3));
+    let wallet = Wallet::new(token.clone(), ledger.clone(), explorer.clone());
 
     // Mint some tokens to a user
     {

@@ -50,7 +50,7 @@ impl P2PNode {
 
             tokio::spawn(async move {
                 let framed = Framed::new(socket, LengthDelimitedCodec::new());
-                let mut transport = tokio_serde::SymmetricallyFramed::new(
+                let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, _, _> = tokio_serde::SymmetricallyFramed::new(
                     framed,
                     Json::default(),
                 );
@@ -69,7 +69,7 @@ impl P2PNode {
 
         tokio::spawn(async move {
             let framed = Framed::new(stream, LengthDelimitedCodec::new());
-            let mut transport = tokio_serde::SymmetricallyFramed::new(
+            let mut transport: tokio_serde::SymmetricallyFramed<_, P2PMessage, _, _> = tokio_serde::SymmetricallyFramed::new(
                 framed,
                 Json::default(),
             );
