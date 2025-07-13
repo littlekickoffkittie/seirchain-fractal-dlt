@@ -12,7 +12,7 @@ pub fn create_sample_wallet() -> Wallet {
     let ledger = Arc::new(Ledger::new(100));
 
     // Create the Wallet instance
-    let explorer = Arc::new(crate::interface::explorer::triad_explorer::TriadExplorer::new(3, 3));
+    let explorer = Arc::new(crate::interface::explorer::triad_explorer::TriadExplorer::new(3));
     let wallet = Wallet::new(token.clone(), ledger.clone(), explorer.clone());
 
     // Mint some tokens to a user
