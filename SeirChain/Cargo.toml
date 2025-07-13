@@ -18,3 +18,19 @@ tokio-util = { version = "0.7", features = ["codec"] }
 serde = { version = "1.0", features = ["derive"] }
 rocksdb = "0.21.0"
 futures = "0.3"
+
+[[test]]
+name = "security_tests"
+path = "tests/security_tests.rs"
+
+[[bin]]
+name = "bencher"
+path = "src/bin/bencher.rs"
+
+[[bin]]
+name = "bencher"
+path = "src/bin/bencher.rs"
+
+[[bin]]
+name = "bencher"
+path = "src/bin/bencher.rs"

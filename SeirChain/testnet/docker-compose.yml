@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Genesis node
+  genesis:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+        ./target/debug/server --is-genesis &
+        sleep 5 &&
+        ./target/debug/miner
+      "
+
+  # Regular nodes
+  node-1: &node-template
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        ./target/debug/server &
+        sleep 5 &&
+        ./target/debug/miner --peer /dns/genesis/tcp/8000
+      "
+    depends_on:
+      - genesis
+
+  node-2:
+    <<: *node-template
+  node-3:
+    <<: *node-template
+  # ... Add up to 99 nodes
+  node-99:
+    <<: *node-template
