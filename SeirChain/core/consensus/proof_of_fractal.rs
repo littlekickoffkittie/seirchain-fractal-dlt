@@ -60,7 +60,9 @@ impl ProofOfFractal {
     pub fn solve_puzzle(&self, data: &[u8]) -> bool {
         let mut rng = OsRng;
         let start_time = std::time::Instant::now();
-        let timeout_secs = (*self.difficulty.lock().unwrap() as u64).pow(2).max(30).min(300);
+        let difficulty_guard = self.difficulty.lock().unwrap();
+        let difficulty = *difficulty_guard;
+        let timeout_secs = (difficulty as u64).pow(2).max(30).min(300);
         let timeout = std::time::Duration::from_secs(timeout_secs);
 
         loop {
@@ -76,7 +78,6 @@ impl ProofOfFractal {
             let mut hash_arr = [0u8; 32];
             hash_arr.copy_from_slice(&result);
 
-            let difficulty = *self.difficulty.lock().unwrap();
             if ProofOfFractal::hash_meets_target(&hash_arr, difficulty) {
                 self.nonce.store(nonce_candidate, Ordering::SeqCst);
                 let mut hash_guard = self.hash.lock().unwrap();
@@ -89,7 +90,7 @@ impl ProofOfFractal {
     /// Checks if the given hash meets the fractal pattern difficulty.
     /// The pattern is that a part of the hash is repeated.
     fn hash_meets_target(hash: &[u8; 32], difficulty: u32) -> bool {
-        let pattern_length = (difficulty as usize).min(8); // Max pattern length of 8 bytes
+        let pattern_length = (difficulty as usize).min(8);
         if pattern_length == 0 {
             return true;
         }
@@ -98,11 +99,11 @@ impl ProofOfFractal {
             if i + pattern_length > hash.len() {
                 break;
             }
-            if &hash[i..i + pattern_length] == pattern {
-                return true;
+            if &hash[i..i + pattern_length] != pattern {
+                return false;
             }
         }
-        false
+        true
     }
 
     /// Verifies that the current nonce produces a valid hash below the target.
