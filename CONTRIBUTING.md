@@ -17,3 +17,7 @@ Make sure your commit messages are clear and concise.
 ## Pull Request
 
 Once you're happy with your changes, open a pull request. We'll review it as soon as we can.
+
+check out this Gemini power devkit I made!💜👌🏻👇🏻
+
+https://gemini.google.com/share/a1da5379db8c
