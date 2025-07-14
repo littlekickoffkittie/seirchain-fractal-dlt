@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use tokio::task;
 
 /// SvmExecutor manages execution and state of smart contracts in SeirChain VM.
-#[derive(Clone)]
 pub struct SvmExecutor {
     /// Mapping from contract ID to state bytes.
     pub contract_states: Arc<Mutex<HashMap<String, Vec<u8>>>>,
@@ -38,43 +37,43 @@ impl SvmExecutor {
         println!("Contract {} assigned to shard {}", contract_id, shard_id);
 
         let states = Arc::clone(&self.contract_states);
+        let deps_map = Arc::clone(&self.dependencies);
+
+        // Clone contract_id and input to own them inside async block
+        let contract_id_owned = contract_id.to_string();
+        let input_owned = input.to_vec();
 
         // Add dependencies for the current contract
-        let mut deps_guard = self.dependencies.lock().unwrap();
-        let entry = deps_guard.entry(contract_id.to_string()).or_insert_with(HashSet::new);
-        for dep in &deps {
-            entry.insert(dep.clone());
+        {
+            let mut deps_guard = deps_map.lock().unwrap();
+            let entry = deps_guard.entry(contract_id_owned.clone()).or_insert_with(HashSet::new);
+            for dep in deps {
+                entry.insert(dep);
+            }
         }
-        drop(deps_guard);
-
-
-        let contract_id_clone = contract_id.to_string();
-        let input_clone = input.to_vec();
-        let deps_map = Arc::clone(&self.dependencies);
 
         let handle = task::spawn(async move {
             // Wait for dependencies to be met
             loop {
-                let all_deps_met = {
+                {
                     let deps_guard = deps_map.lock().unwrap();
-                    if let Some(contract_deps) = deps_guard.get(&contract_id_clone) {
+                    if let Some(contract_deps) = deps_guard.get(&contract_id_owned) {
                         let states_guard = states.lock().unwrap();
-                        contract_deps.iter().all(|dep| states_guard.contains_key(dep))
+                        if contract_deps.iter().all(|dep| states_guard.contains_key(dep)) {
+                            break;
+                        }
                     } else {
-                        true
+                        break;
                     }
-                };
-
-                if all_deps_met {
-                    break;
                 }
                 tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
             }
 
-
-            let mut states_guard = states.lock().unwrap();
-            states_guard.insert(contract_id_clone, input_clone.clone());
-            input_clone
+            {
+                let mut states_guard = states.lock().unwrap();
+                states_guard.insert(contract_id_owned.clone(), input_owned.clone());
+            }
+            input_owned
         });
 
         handle.await.map_err(|e| e.to_string())
@@ -188,8 +187,28 @@ mod tests {
         let input1 = b"input1";
         let input2 = b"input2";
 
-        svm.execute_contract(&contract1, input1, vec![]).await.unwrap();
-        svm.execute_contract(&contract2, input2, vec![contract1.clone()]).await.unwrap();
+        let mut handles = vec![];
+        let mut svm2 = SvmExecutor::new(4);
+        svm2.contract_states = svm.contract_states.clone();
+        svm2.dependencies = svm.dependencies.clone();
+
+
+        handles.push(tokio::spawn(async move {
+            svm2.execute_contract(&contract2, input2, vec![contract1.clone()]).await
+        }));
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+        let mut svm3 = SvmExecutor::new(4);
+        svm3.contract_states = svm.contract_states.clone();
+        svm3.dependencies = svm.dependencies.clone();
+        handles.push(tokio::spawn(async move {
+            svm3.execute_contract(&contract1, input1, vec![]).await
+        }));
+
+        let results = futures::future::join_all(handles).await;
+        assert!(results[0].is_ok());
+        assert!(results[1].is_ok());
 
         assert_eq!(svm.get_contract_state(&contract1), Some(input1.to_vec()));
         assert_eq!(svm.get_contract_state(&contract2), Some(input2.to_vec()));

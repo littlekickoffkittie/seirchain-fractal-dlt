@@ -21,7 +21,8 @@ impl HierarchicalRecursiveConsensus {
         proof.adjust_difficulty(1000);
 
         let children = if depth > 0 {
-            nodes.chunks(nodes.len() / 3).map(|chunk| {
+            let chunk_size = std::cmp::max(1, nodes.len() / 3);
+            nodes.chunks(chunk_size).map(|chunk| {
                 HierarchicalRecursiveConsensus::new(chunk.to_vec(), fault_tolerance, difficulty, depth - 1)
             }).collect()
         } else {
