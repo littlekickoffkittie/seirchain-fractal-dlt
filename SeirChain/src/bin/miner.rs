@@ -31,6 +31,10 @@ struct Args {
     /// Amount of Waclanium tokens to mint on successful mining
     #[arg(short = 'a', long, default_value_t = 100)]
     mint_amount: u64,
+
+    /// Fee for minting tokens
+    #[arg(long, default_value_t = 1)]
+    fee: u64,
 }
 
 fn main() {
@@ -54,7 +58,7 @@ fn main() {
         println!("Mining succeeded and consensus reached.");
 
         // Create WaclaniumToken instance with initial supply and max supply
-        let mut token = WaclaniumToken::new(0, 1_000_000);
+        let mut token = WaclaniumToken::new(0, 1_000_000, args.fee);
 
         // Mint tokens to miner
         match token.mint(&args.miner_id, args.mint_amount) {

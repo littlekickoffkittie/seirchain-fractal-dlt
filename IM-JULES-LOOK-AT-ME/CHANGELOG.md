@@ -17,3 +17,8 @@ This file documents the work done by Jules and the conversations held during the
 * **Jules:** Fixed a bug in the `solve_puzzle` method in `SeirChain/core/consensus/proof_of_fractal.rs` that could cause an infinite loop.
 * **Jules:** Fixed a bug in the `hash_meets_target` method in `SeirChain/core/consensus/proof_of_fractal.rs` that caused it to incorrectly identify the fractal pattern.
 * **Jules:** Ran the test suite to ensure that the changes were correctly implemented and did not introduce any regressions.
+
+## Session 3: Fixing the Miner
+
+* **Jules:** Fixed the `miner` binary compilation by adding the `clap` dependency, adding the `miner` binary to `Cargo.toml`, and moving the `miner.rs` file to the correct location.
+* **Jules:** Fixed a compilation error in the `miner` binary by adding a `fee` argument to the `Args` struct and passing it to the `WaclaniumToken::new` function.
