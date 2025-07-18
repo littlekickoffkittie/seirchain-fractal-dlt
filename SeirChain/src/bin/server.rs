@@ -10,6 +10,8 @@ use std::convert::Infallible;
 use tokio::sync::Mutex;
 use std::sync::Arc;
 use rand::Rng;
+use lazy_static::lazy_static;
+use serde_json::json;
 
 /// CLI arguments for server
 #[derive(Parser, Debug)]
@@ -84,9 +86,12 @@ async fn main() {
         .allow_methods(vec!["GET", "POST", "OPTIONS"])
         .allow_headers(vec!["Content-Type"]);
 
+    let wallet_store_filter = warp::any().map(|| WALLET_STORE.clone());
+
     // Define /api/recent_activity endpoint with CORS
     let recent_activity_route = warp::path!("api" / "recent_activity")
         .and(consensus_filter.clone())
+        .and(wallet_store_filter.clone())
         .and_then(handle_recent_activity)
         .with(cors.clone());
 
@@ -95,6 +100,7 @@ async fn main() {
         .and(warp::post())
         .and(warp::body::json())
         .and(consensus_filter.clone())
+        .and(wallet_store_filter.clone())
         .and_then(handle_send_transaction)
         .with(cors.clone());
 
@@ -102,6 +108,7 @@ async fn main() {
     let sign_in_route = warp::path!("api" / "sign_in")
         .and(warp::post())
         .and(warp::body::json())
+        .and(wallet_store_filter.clone())
         .and_then(handle_sign_in)
         .with(cors.clone());
 
@@ -109,6 +116,7 @@ async fn main() {
     let create_wallet_route = warp::path!("api" / "create_wallet")
         .and(warp::post())
         .and(warp::body::json())
+        .and(wallet_store_filter.clone())
         .and_then(handle_create_wallet)
         .with(cors.clone());
 
@@ -157,12 +165,24 @@ async fn main() {
     });
 
     // Run both futures concurrently
-    tokio::join!(server_future, consensus_future);
+    tokio::select! {
+        res = server_future => {
+            if let Err(e) = res {
+                eprintln!("Server task panicked: {:?}", e);
+            }
+        }
+        res = consensus_future => {
+            if let Err(e) = res {
+                eprintln!("Consensus task panicked: {:?}", e);
+            }
+        }
+    }
 }
 
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 
+#[derive(Clone)]
 struct Wallet {
     address: String,
     balance: u64,
@@ -195,13 +215,18 @@ impl WalletStore {
 
     async fn send_transaction(&self, from: &str, to: &str, amount: u64) -> Result<(), String> {
         let mut wallets = self.wallets.write().await;
-        let from_wallet = wallets.get_mut(from).ok_or("Sender wallet not found")?;
-        if from_wallet.balance < amount {
+        let from_wallet_balance = wallets.get(from).ok_or("Sender wallet not found")?.balance;
+
+        if from_wallet_balance < amount {
             return Err("Insufficient balance".to_string());
         }
-        let to_wallet = wallets.get_mut(to).ok_or("Recipient wallet not found")?;
+
+        let from_wallet = wallets.get_mut(from).ok_or("Sender wallet not found")?;
         from_wallet.balance -= amount;
+
+        let to_wallet = wallets.get_mut(to).ok_or("Recipient wallet not found")?;
         to_wallet.balance += amount;
+
         Ok(())
     }
 
@@ -211,14 +236,15 @@ impl WalletStore {
     }
 }
 
-lazy_static::lazy_static! {
-    static ref WALLET_STORE: WalletStore = WalletStore::new();
+lazy_static! {
+    static ref WALLET_STORE: Arc<WalletStore> = Arc::new(WalletStore::new());
 }
 
 async fn handle_recent_activity(
     _consensus: Arc<Mutex<HierarchicalRecursiveConsensus>>,
+    wallet_store: Arc<WalletStore>,
 ) -> Result<impl warp::Reply, Infallible> {
-    let transactions = WALLET_STORE.recent_transactions().await;
+    let transactions = wallet_store.recent_transactions().await;
     let response = RecentActivityResponse { transactions };
     Ok(warp::reply::json(&response))
 }
@@ -226,6 +252,7 @@ async fn handle_recent_activity(
 async fn handle_send_transaction(
     body: serde_json::Value,
     _consensus: Arc<Mutex<HierarchicalRecursiveConsensus>>,
+    wallet_store: Arc<WalletStore>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let from_address = body.get("from_address").and_then(|v| v.as_str()).unwrap_or("");
     let to_address = body.get("to_address").and_then(|v| v.as_str()).unwrap_or("");
@@ -235,7 +262,7 @@ async fn handle_send_transaction(
         return Ok(warp::reply::json(&serde_json::json!({"status": "error", "message": "Invalid transaction data"})));
     }
 
-    match WALLET_STORE.send_transaction(from_address, to_address, amount).await {
+    match wallet_store.send_transaction(from_address, to_address, amount).await {
         Ok(_) => Ok(warp::reply::json(&serde_json::json!({"status": "success"}))),
         Err(e) => Ok(warp::reply::json(&serde_json::json!({"status": "error", "message": e}))),
     }
@@ -243,12 +270,13 @@ async fn handle_send_transaction(
 
 async fn handle_sign_in(
     body: serde_json::Value,
+    wallet_store: Arc<WalletStore>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let address = body.get("address").and_then(|v| v.as_str()).unwrap_or("");
     if address.is_empty() {
         return Ok(warp::reply::json(&serde_json::json!({"status": "error", "message": "Address required"})));
     }
-    let wallet = WALLET_STORE.get_wallet(address).await;
+    let wallet = wallet_store.get_wallet(address).await;
     match wallet {
         Some(w) => Ok(warp::reply::json(&serde_json::json!({"balance": w.balance}))),
         None => Ok(warp::reply::json(&serde_json::json!({"status": "error", "message": "Wallet not found"}))),
@@ -257,11 +285,12 @@ async fn handle_sign_in(
 
 async fn handle_create_wallet(
     body: serde_json::Value,
+    wallet_store: Arc<WalletStore>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let user_id = body.get("user_id").and_then(|v| v.as_str()).unwrap_or("");
     if user_id.is_empty() {
         return Ok(warp::reply::json(&serde_json::json!({"status": "error", "message": "User ID required"})));
     }
-    let wallet = WALLET_STORE.create_wallet(user_id).await;
+    let wallet = wallet_store.create_wallet(user_id).await;
     Ok(warp::reply::json(&serde_json::json!({"address": wallet.address})))
 }
